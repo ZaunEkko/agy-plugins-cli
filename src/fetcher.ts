@@ -3,7 +3,27 @@ import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
 import * as readline from 'readline';
+import { execSync } from 'child_process';
 import { mergeMcpConfig } from './mcp-merger';
+
+let cachedToken: string | null = null;
+function getGithubToken(): string | null {
+  if (cachedToken) return cachedToken;
+  if (process.env.GITHUB_TOKEN) {
+    cachedToken = process.env.GITHUB_TOKEN;
+    return cachedToken;
+  }
+  try {
+    const token = execSync('gh auth token', { stdio: ['pipe', 'pipe', 'ignore'], encoding: 'utf-8' }).trim();
+    if (token) {
+      cachedToken = token;
+      return token;
+    }
+  } catch (e) {
+    // Ignore error
+  }
+  return null;
+}
 
 const GITHUB_API_BASE = 'https://api.github.com/repos';
 
@@ -41,8 +61,9 @@ export async function getLatestCommitSha(repo: string, pluginPath: string): Prom
       'Accept': 'application/vnd.github.v3+json',
       'User-Agent': 'agy-plugins-cli'
     };
-    if (process.env.GITHUB_TOKEN) {
-      headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    const token = getGithubToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
     const response = await axios.get(url, { headers });
@@ -65,8 +86,9 @@ async function checkSecurity(repo: string, pluginPath: string): Promise<boolean>
       'Accept': 'application/vnd.github.v3+json',
       'User-Agent': 'agy-plugins-cli'
     };
-    if (process.env.GITHUB_TOKEN) {
-      headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    const token = getGithubToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
     const response = await axios.get<GithubContent[]>(url, { headers });
@@ -105,8 +127,9 @@ export async function downloadPlugin(repo: string, pluginPath: string, targetDir
       'Accept': 'application/vnd.github.v3+json',
       'User-Agent': 'agy-plugins-cli'
     };
-    if (process.env.GITHUB_TOKEN) {
-      headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    const token = getGithubToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
     const response = await axios.get<GithubContent[] | GithubContent>(url, { headers });
