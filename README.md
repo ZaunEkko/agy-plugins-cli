@@ -26,19 +26,10 @@
 
 ## 📦 Installation
 
-To install `agy-plugin` globally on your machine:
+To install `agy-plugins-cli` globally on your machine, simply run:
 
 ```bash
-# Clone the repository
-git clone https://github.com/ZaunEkko/agy-plugins-cli.git
-cd agy-plugins-cli
-
-# Install dependencies and build
-npm install
-npm run build
-
-# Link globally
-npm link
+npm install -g agy-plugins-cli@latest
 ```
 
 *Now you can use the `agy-plugin` command anywhere in your terminal!*
