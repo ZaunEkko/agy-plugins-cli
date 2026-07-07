@@ -37,9 +37,15 @@ function askQuestion(query: string): Promise<boolean> {
 export async function getLatestCommitSha(repo: string, pluginPath: string): Promise<string | null> {
   const url = `${GITHUB_API_BASE}/${repo}/commits?path=${pluginPath}&per_page=1`;
   try {
-    const response = await axios.get(url, {
-      headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'agy-plugins-cli' }
-    });
+    const headers: any = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'agy-plugins-cli'
+    };
+    if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+
+    const response = await axios.get(url, { headers });
     if (response.data && response.data.length > 0) {
       return response.data[0].sha;
     }
@@ -55,9 +61,15 @@ export async function getLatestCommitSha(repo: string, pluginPath: string): Prom
 async function checkSecurity(repo: string, pluginPath: string): Promise<boolean> {
   const url = `${GITHUB_API_BASE}/${repo}/contents/${pluginPath}`;
   try {
-    const response = await axios.get<GithubContent[]>(url, {
-      headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'agy-plugins-cli' }
-    });
+    const headers: any = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'agy-plugins-cli'
+    };
+    if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+
+    const response = await axios.get<GithubContent[]>(url, { headers });
     
     const hasHooks = response.data.some(item => item.name === 'hooks' && item.type === 'dir');
     if (hasHooks) {
@@ -89,12 +101,15 @@ export async function downloadPlugin(repo: string, pluginPath: string, targetDir
   const url = `${GITHUB_API_BASE}/${repo}/contents/${pluginPath}`;
   
   try {
-    const response = await axios.get<GithubContent[] | GithubContent>(url, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'agy-plugins-cli'
-      }
-    });
+    const headers: any = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'agy-plugins-cli'
+    };
+    if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+
+    const response = await axios.get<GithubContent[] | GithubContent>(url, { headers });
 
     const contents = Array.isArray(response.data) ? response.data : [response.data];
 
