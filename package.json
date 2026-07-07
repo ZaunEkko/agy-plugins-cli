@@ -1,0 +1,31 @@
+{
+  "name": "agy-plugins-cli",
+  "version": "1.0.0",
+  "description": "Antigravity Package Manager",
+  "main": "dist/index.js",
+  "bin": {
+    "agy-plugin": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.18.1",
+    "chalk": "^5.6.2",
+    "commander": "^15.0.0",
+    "inquirer": "^14.0.2",
+    "ora": "^9.4.1"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.10",
+    "@types/node": "^26.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  }
+}
