@@ -3,7 +3,8 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as path from 'path';
 import { addMarketplace, loadConfig } from './config';
-import { downloadPlugin } from './fetcher';
+import { downloadPlugin, getLatestCommitSha } from './fetcher';
+import { recordPluginInstall, getInstalledPlugin, loadState } from './state';
 import ora from 'ora';
 
 const program = new Command();
@@ -40,7 +41,6 @@ program
       namespace = parts[1];
     }
 
-    // Resolve the repository from config
     const config = loadConfig();
     let targetRepo: string | undefined;
 
@@ -48,7 +48,6 @@ program
       targetRepo = config.marketplaces.find(repo => repo.toLowerCase().includes(namespace!.toLowerCase()));
       if (!targetRepo) {
         console.error(chalk.red(`Error: Namespace '${namespace}' not found in your marketplaces.`));
-        console.log(chalk.yellow(`Try adding it first: agy-plugin marketplace add ${namespace}/agy-plugins`));
         process.exit(1);
       }
     } else {
@@ -56,7 +55,6 @@ program
         console.error(chalk.red(`Error: No marketplaces configured.`));
         process.exit(1);
       }
-      // Default to the first marketplace
       targetRepo = config.marketplaces[0];
     }
 
@@ -64,13 +62,63 @@ program
     
     const spinner = ora(`Downloading ${pluginName}...`).start();
     try {
-      // For now, download to .agy folder in the current directory
       const targetDir = path.join(process.cwd(), '.agy');
       await downloadPlugin(targetRepo, pluginName, targetDir);
+      
+      const sha = await getLatestCommitSha(targetRepo, pluginName);
+      if (sha) {
+        recordPluginInstall(pluginName, targetRepo, sha);
+      }
+      
       spinner.succeed(chalk.green(`Successfully installed ${pluginName} to ${targetDir}`));
     } catch (error) {
       spinner.fail(chalk.red(`Failed to install ${pluginName}.`));
       process.exit(1);
+    }
+  });
+
+// "update" command
+program
+  .command('update [plugin]')
+  .description('Update a specific plugin or all installed plugins')
+  .action(async (pluginName) => {
+    const state = loadState();
+    const pluginsToUpdate = pluginName ? [pluginName] : Object.keys(state.plugins);
+    
+    if (pluginsToUpdate.length === 0) {
+      console.log(chalk.yellow(`No plugins installed yet.`));
+      return;
+    }
+
+    for (const name of pluginsToUpdate) {
+      const installed = state.plugins[name];
+      if (!installed) {
+        console.log(chalk.red(`Plugin ${name} is not installed.`));
+        continue;
+      }
+
+      console.log(chalk.blue(`Checking for updates: ${name}...`));
+      const latestSha = await getLatestCommitSha(installed.repo, name);
+      
+      if (!latestSha) {
+        console.log(chalk.yellow(`Could not fetch version info for ${name}. Skipping.`));
+        continue;
+      }
+
+      if (latestSha === installed.sha) {
+        console.log(chalk.green(`✓ ${name} is already up to date.`));
+      } else {
+        console.log(chalk.cyan(`Update found for ${name}. Downloading new version...`));
+        const spinner = ora(`Updating ${name}...`).start();
+        try {
+          const targetDir = path.join(process.cwd(), '.agy');
+          await downloadPlugin(installed.repo, name, targetDir, true); // skip security prompt on update
+          recordPluginInstall(name, installed.repo, latestSha);
+          spinner.succeed(chalk.green(`Successfully updated ${name}.`));
+        } catch (error) {
+          spinner.fail(chalk.red(`Failed to update ${name}.`));
+        }
+      }
     }
   });
 
