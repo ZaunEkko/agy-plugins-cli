@@ -4,7 +4,7 @@
   "description": "Antigravity Package Manager",
   "main": "dist/index.js",
   "bin": {
-    "agy-plugin": "./dist/index.js"
+    "agy-plugin": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
