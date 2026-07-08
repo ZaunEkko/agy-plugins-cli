@@ -9,7 +9,7 @@
 [![CLI](https://img.shields.io/badge/CLI-Command_Line-black?style=for-the-badge&logo=gnometerminal)](https://github.com/ZaunEkko/agy-plugins-cli)
 [![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](#)
 
-> Seamlessly install, update, and manage Antigravity plugins across multiple repositories, with zero-configuration private repository support and secure context merging.
+> Seamlessly install, update, and manage Antigravity plugins across multiple repositories, with interactive terminal UI, granular namespace support, and secure context merging.
 
 </div>
 
@@ -17,11 +17,11 @@
 
 ## ✨ Features
 
-- **🌐 Multi-Marketplace Support**: Add and switch between multiple remote GitHub repositories as your plugin sources.
-- **⚡ Hot Updates**: Fetch the newest `commit` fingerprint from remote repos and perform silent updates instantly (`agy-plugin update`).
-- **🔐 Zero-Config Private Repos**: Natively detects and utilizes your local `gh auth token` to bypass GitHub API 404s, granting frictionless access to your enterprise private plugin repositories.
-- **🛡️ Secure Hook Execution**: Automatically detects and alerts you of arbitrary executable hooks (e.g., Python scripts) before installation.
-- **🧩 MCP Auto-Merger**: Safely and dynamically merges multiple MCP (Model Context Protocol) configurations to your global workspace without overwriting existing servers.
+- **🌐 Multi-Marketplace Support**: Add and switch between multiple remote GitHub repositories as your plugin sources (e.g. `ZaunEkko/agy-plugins`).
+- **⚡ Hot Updates with Precision**: Fetch the newest `commit` fingerprint from remote repos and perform updates instantly at global, namespace, or individual plugin levels.
+- **🖥️ Interactive TUI**: Browse, check update status, and batch-install plugins via a stunning terminal user interface built with `@clack/prompts`.
+- **🔐 Zero-Config Private Repos**: Natively detects and utilizes your local `gh auth token` to bypass GitHub API rate limits and access enterprise private plugin repositories.
+- **🛡️ Secure Hook & MCP Merging**: Safely and dynamically merges multiple `hooks.json` and `mcp.json` configurations (with automatic JSON string deduplication) to your global workspace without overwriting existing servers or triggering duplicate scripts.
 
 <br />
 
@@ -45,7 +45,7 @@ Link a GitHub repository to your local registry and explore its plugins interact
 # Add a repository as a marketplace
 agy-plugin marketplace add ZaunEkko/agy-plugins
 
-# Open the interactive marketplace dashboard
+# Open the interactive marketplace dashboard (Shows Outdated/Installed status!)
 agy-plugin marketplace list
 ```
 *(The interactive TUI lets you browse available plugins, see update dates, and batch install them with a single keystroke!)*
@@ -56,18 +56,18 @@ Install plugins from the connected marketplace by specifying the plugin name and
 agy-plugin add commit-commands@zaunekko
 agy-plugin add explanatory-output-style@zaunekko
 ```
-*(The CLI will securely download the `rules`, `skills`, and `hooks` to your local `.gemini/` directory!)*
+*(The CLI will securely download the `skills`, and `hooks` to your local `.gemini/config/` directory!)*
 
 ### 3. Keep Plugins Updated
-Easily fetch and sync the latest plugin updates from the remote authors.
+Easily fetch and sync the latest plugin updates from the remote authors. Our CLI tracks the local and remote SHA fingerprints to dynamically detect out-of-date plugins.
 ```bash
-# Update all installed plugins across all namespaces
+# Update all installed plugins across all namespaces globally
 agy-plugin update
 
 # Update all plugins in a specific namespace
 agy-plugin update @zaunekko
 
-# Update a specific plugin
+# Update a specific plugin directly
 agy-plugin update commit-commands@zaunekko
 ```
 
@@ -75,8 +75,8 @@ agy-plugin update commit-commands@zaunekko
 
 ## 🧠 Architecture & Security
 
-- **Fingerprint Tracking**: `agy-plugin` caches the latest Git `sha` for downloaded directories in `~/.agy-plugin/installed.json`, enabling intelligent delta-updates instead of redownloading everything.
-- **Dynamic Context Injection**: Antigravity natively loads everything dropped into the `.agy/` directory. Our CLI acts as the secure bridge between remote community repos and your local AI context.
+- **Fingerprint Tracking**: `agy-plugin` caches the latest Git `sha` for downloaded directories in `~/.gemini/config/state.json`, enabling intelligent delta-updates and distinct visual states (Installed vs Update Available) in the TUI.
+- **Dynamic Context Injection**: Antigravity natively loads everything dropped into the `.gemini/config/` directory. Our CLI acts as the secure bridge between remote community repos and your local AI context.
 - **`gh` CLI Integration**: Under the hood, if `GITHUB_TOKEN` is missing, the tool attempts to extract tokens via `gh auth token` to ensure your local git workflow is entirely uninterrupted.
 
 <br />
