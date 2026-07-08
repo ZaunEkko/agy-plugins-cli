@@ -23,13 +23,15 @@
 - **⚡ 초고속 핫 업데이트**: 원격 저장소에서 최신 `commit` 지문을 가져와 글로벌, 네임스페이스 또는 개별 플러그인 수준에서 즉시 업데이트를 수행합니다.
 - **🖥️ 대화형 TUI**: `@clack/prompts`로 구축된 멋진 터미널 사용자 인터페이스를 통해 플러그인을 탐색하고, 업데이트 상태를 확인하고, 일괄 설치할 수 있습니다.
 - **🔐 비공개 저장소 제로 구성 액세스**: 로컬 `gh auth token`을 기본적으로 감지하고 활용하여 GitHub API 속도 제한을 우회하고 엔터프라이즈 비공개 플러그인 저장소에 원활하게 액세스합니다.
-- **🛡️ 안전한 Hook 및 MCP 병합**: 여러 `hooks.json` 및 `mcp.json` 구성을 글로벌 작업 공간에 자동으로 안전하게 병합합니다. JSON 문자열 중복 제거 기술을 통해 기존 서버를 덮어쓰거나 중복 스크립트를 트리거하지 않습니다.
+- **🛡️ Hook 및 MCP 병합**: 원격 `hooks.json` 및 `mcp.json`을 Antigravity 설정에 병합합니다. Hook 배열은 중복 제거되며, 같은 이름의 MCP server는 warning을 표시한 뒤 새 설정으로 대체됩니다.
 
 <br />
 
 ## 📦 설치
 
 컴퓨터에 `agy-plugins-cli`를 전역으로 설치하려면 다음 명령을 실행합니다.
+
+Node.js `^22.13.0 || >=23.5.0`이 필요합니다.
 
 ```bash
 npm install -g agy-plugins-cli@latest
@@ -77,7 +79,7 @@ agy-plugin update commit-commands@zaunekko
 
 ## 🧠 아키텍처 및 보안
 
-- **지문 추적**: `agy-plugin`은 다운로드한 디렉토리의 최신 Git `sha`를 로컬 `~/.gemini/config/state.json`에 캐시합니다. 이를 통해 지능형 델타 업데이트가 가능하며 TUI 패널에서 직관적인 시각적 피드백(설치됨 vs 업데이트 가능)을 제공합니다.
+- **지문 추적**: `agy-plugin`은 다운로드한 디렉토리의 최신 Git `sha`를 로컬 `~/.agy-plugin/installed.json`에 캐시하고 marketplace 설정을 `~/.agy-plugin/config.json`에 저장합니다. 이를 통해 지능형 델타 업데이트가 가능하며 TUI 패널에서 직관적인 시각적 피드백(설치됨 vs 업데이트 가능)을 제공합니다.
 - **동적 컨텍스트 주입**: Antigravity는 `.gemini/config/` 디렉토리에 배치된 모든 콘텐츠를 기본적으로 로드합니다. 이 CLI는 원격 커뮤니티 저장소와 로컬 AI 컨텍스트를 연결하는 안전한 브리지 역할을 합니다.
 - **`gh` CLI 통합**: 내부적으로 `GITHUB_TOKEN` 환경 변수를 찾을 수 없는 경우 도구는 `gh auth token` 명령을 통해 토큰을 추출하려고 시도합니다. 이를 통해 로컬 Git 워크플로가 방해받지 않도록 보장합니다.
 

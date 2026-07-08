@@ -1,7 +1,5 @@
 # Code of Conduct
 
-[简体中文](CODE_OF_CONDUCT.md) · [English](i18n/en/CODE_OF_CONDUCT.md) · [繁體中文](i18n/zh-TW/CODE_OF_CONDUCT.md) · [日本語](i18n/ja/CODE_OF_CONDUCT.md) · [한국어](i18n/ko/CODE_OF_CONDUCT.md)
-
 ## 我们的承诺
 
 为了营造开放、友好、尊重的社区环境，参与者和维护者承诺让本项目成为一个没有骚扰和歧视的协作空间。
