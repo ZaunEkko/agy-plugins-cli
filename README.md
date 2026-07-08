@@ -39,11 +39,16 @@ npm install -g agy-plugins-cli@latest
 
 ## 🚀 Quick Start
 
-### 1. Add a Plugin Marketplace
-Link a GitHub repository to your local registry.
+### 1. Add and Explore Marketplaces
+Link a GitHub repository to your local registry and explore its plugins interactively.
 ```bash
+# Add a repository as a marketplace
 agy-plugin marketplace add ZaunEkko/agy-plugins
+
+# Open the interactive marketplace dashboard
+agy-plugin marketplace list
 ```
+*(The interactive TUI lets you browse available plugins, see update dates, and batch install them with a single keystroke!)*
 
 ### 2. Install a Plugin
 Install plugins from the connected marketplace by specifying the plugin name and the repository namespace.
@@ -51,16 +56,19 @@ Install plugins from the connected marketplace by specifying the plugin name and
 agy-plugin add commit-commands@zaunekko
 agy-plugin add explanatory-output-style@zaunekko
 ```
-*(The CLI will securely download the `rules`, `skills`, and `hooks` to your local `.agy/` directory!)*
+*(The CLI will securely download the `rules`, `skills`, and `hooks` to your local `.gemini/` directory!)*
 
 ### 3. Keep Plugins Updated
 Easily fetch and sync the latest plugin updates from the remote authors.
 ```bash
-# Update all installed plugins
+# Update all installed plugins across all namespaces
 agy-plugin update
 
+# Update all plugins in a specific namespace
+agy-plugin update @zaunekko
+
 # Update a specific plugin
-agy-plugin update commit-commands
+agy-plugin update commit-commands@zaunekko
 ```
 
 <br />
