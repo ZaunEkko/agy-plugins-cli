@@ -13,7 +13,9 @@ function mergeHooksConfigData(target: any, source: any) {
         if (!target[key][hookType]) {
           target[key][hookType] = source[key][hookType];
         } else if (Array.isArray(target[key][hookType]) && Array.isArray(source[key][hookType])) {
-          target[key][hookType] = [...target[key][hookType], ...source[key][hookType]];
+          const merged = [...target[key][hookType], ...source[key][hookType]];
+          const unique = Array.from(new Set(merged.map(item => JSON.stringify(item)))).map(item => JSON.parse(item));
+          target[key][hookType] = unique;
         } else {
           target[key][hookType] = source[key][hookType];
         }
