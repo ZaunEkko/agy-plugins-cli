@@ -74,7 +74,8 @@ marketplaceCmd
       } else {
         console.log(chalk.green.bold(`\n🔌 Plugins available in @${namespace}:`));
         plugins.forEach(p => {
-          console.log(chalk.white(`  - `) + chalk.cyan(`${p}@${namespace}`));
+          const dateStr = p.date ? new Date(p.date).toISOString().split('T')[0] : 'unknown';
+          console.log(chalk.white(`  - `) + chalk.cyan(`${p.name}@${namespace}`) + chalk.gray(` (updated: ${dateStr})`));
         });
         console.log('');
       }
