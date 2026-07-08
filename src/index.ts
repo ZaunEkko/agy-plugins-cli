@@ -81,6 +81,7 @@ marketplaceCmd
   .action(async (namespaceArg) => {
     let namespace = namespaceArg.replace('@', '').toLowerCase();
     const config = loadConfig();
+    const state = loadState();
     
     const targetRepo = config.marketplaces.find(repo => repo.toLowerCase().includes(namespace));
     if (!targetRepo) {
@@ -88,25 +89,83 @@ marketplaceCmd
       process.exit(1);
     }
 
-    console.log(chalk.blue(`Fetching available plugins from ${targetRepo}...`));
-    const spinner = ora(`Checking namespace @${namespace}...`).start();
-    
+    const s = ora(`Checking namespace @${namespace}...`).start();
+    let plugins: {name: string, date: string | null}[] = [];
     try {
-      const plugins = await listPluginsInRepo(targetRepo);
-      spinner.stop();
-      
-      if (plugins.length === 0) {
-        console.log(chalk.yellow(`No plugins found in namespace @${namespace}.`));
-      } else {
-        console.log(chalk.green.bold(`\n🔌 Plugins available in @${namespace}:`));
-        plugins.forEach(p => {
-          const dateStr = p.date ? new Date(p.date).toISOString().split('T')[0] : 'unknown';
-          console.log(chalk.white(`  - `) + chalk.cyan(`${p.name}@${namespace}`) + chalk.gray(` (updated: ${dateStr})`));
-        });
-        console.log('');
-      }
+      plugins = await listPluginsInRepo(targetRepo);
+      s.stop();
     } catch (e: any) {
-      spinner.fail(chalk.red(`Failed to check namespace @${namespace}`));
+      s.fail(chalk.red(`Failed to check namespace @${namespace}`));
+      return;
+    }
+
+    // Dynamic import to support ESM-only clack/prompts
+    const { select, isCancel, multiselect } = await import('@clack/prompts');
+
+    const installedPlugins = Object.entries(state.plugins).filter(([k, v]) => v.repo === targetRepo).map(([k, v]) => k);
+    
+    console.clear();
+    console.log(chalk.white.bold(namespace));
+    console.log(chalk.gray(targetRepo) + '\n');
+    console.log(chalk.white(`${plugins.length} available plugins\n`));
+
+    if (installedPlugins.length > 0) {
+      console.log(chalk.white.bold(`Installed plugins (${installedPlugins.length}):`));
+      installedPlugins.forEach(p => {
+        console.log(chalk.gray(`● `) + chalk.white(p.split('@')[0]));
+      });
+      console.log('');
+    }
+
+    const action = await select({
+      message: 'Select an action (Enter to select • Esc to go back)',
+      options: [
+        { value: 'browse', label: `> Browse plugins (${plugins.length})` },
+        { value: 'update', label: `  Update marketplace` },
+        { value: 'remove', label: `  Remove marketplace` }
+      ],
+    });
+
+    if (isCancel(action)) {
+      process.exit(0);
+    }
+
+    if (action === 'browse') {
+      const selectedPlugins = await multiselect({
+        message: 'Select plugins to install (Space to select, Enter to confirm)',
+        options: plugins.map(p => ({
+          value: p.name,
+          label: p.name,
+          hint: p.date ? `updated ${new Date(p.date).toISOString().split('T')[0]}` : ''
+        })),
+        required: false,
+      });
+
+      if (isCancel(selectedPlugins)) {
+        process.exit(0);
+      }
+
+      const toInstall = selectedPlugins as string[];
+      if (toInstall.length > 0) {
+        for (const p of toInstall) {
+           console.log(chalk.blue(`\nInstalling ${p}...`));
+           const targetDir = getTargetDir(false);
+           try {
+             const result = await downloadPlugin(targetRepo, p, targetDir);
+             const sha = await getLatestCommitSha(targetRepo, p);
+             if (sha) {
+               recordPluginInstall(`${p}@${namespace}`, targetRepo, sha, result.files, result.hooks);
+             }
+             console.log(chalk.green(`✓ Successfully installed ${p}`));
+           } catch (e) {
+             console.log(chalk.red(`Failed to install ${p}`));
+           }
+        }
+      }
+    } else if (action === 'update') {
+      console.log(chalk.yellow('Update marketplace feature coming soon!'));
+    } else if (action === 'remove') {
+      console.log(chalk.yellow('Remove marketplace feature coming soon!'));
     }
   });
 
