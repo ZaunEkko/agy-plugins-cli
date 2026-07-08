@@ -1,5 +1,5 @@
 name: 💡 Feature Request
-description: Suggest a new feature or enhancement for the CLI package manager
+description: Suggest a new feature or enhancement for the CLI / 建议新功能或改进
 labels: ["enhancement"]
 assignees: []
 
@@ -7,34 +7,42 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for suggesting a feature! Please provide as much detail as possible.
-        感谢您提出功能建议！请尽可能提供详细信息。
+        Please select your preferred language below.
+        请在下方选择您的首选语言。
+        請在下方選擇您的首選語言。
+        以下から希望の言語を選択してください。
+        아래에서 선호하는 언어를 선택해 주세요.
         
+  - type: dropdown
+    id: language
+    attributes:
+      label: Preferred Language / 首选语言 / 首選語言 / 使用言語 / 선호하는 언어
+      options:
+        - English
+        - 简体中文
+        - 繁體中文
+        - 日本語
+        - 한국어
+    validations:
+      required: true
+
   - type: textarea
     id: problem
     attributes:
-      label: Is your feature request related to a problem? (是否与某个痛点相关？)
-      description: A clear and concise description of what the problem is.
-      placeholder: I'm always frustrated when...
+      label: Related Problem / 相关痛点 / 相關痛點 / 関連する問題 / 관련 문제
+      description: Is your feature request related to a problem? / 您的功能请求是否与某个问题或痛点相关？ / 您的功能請求是否與某個問題或痛點相關？ / 機能リクエストは特定の問題に関連していますか？ / 기능 요청이 특정 문제와 관련이 있습니까?
     validations:
       required: true
 
   - type: textarea
     id: solution
     attributes:
-      label: Describe the solution you'd like (您期望的解决方案)
-      description: A clear and concise description of what you want to happen (e.g., new CLI commands, flags, or TUI improvements).
+      label: Expected Solution / 期望的解决方案 / 期望的解決方案 / 期待する解決策 / 예상되는 해결책
+      description: What do you want to happen? (e.g., new commands) / 您希望发生什么？（例如：新命令） / 您希望發生什麼？（例如：新命令） / 何を望みますか？（例：新しいコマンド） / 무엇을 원하십니까? (예: 새로운 명령)
     validations:
       required: true
 
   - type: textarea
     id: alternatives
     attributes:
-      label: Describe alternatives you've considered (您考虑过的替代方案)
-      description: A clear and concise description of any alternative solutions or workarounds you've considered.
-
-  - type: textarea
-    id: context
-    attributes:
-      label: Additional Context (补充信息)
-      description: Add any other context or screenshots about the feature request here.
+      label: Alternatives Considered / 考虑过的替代方案 / 考慮過的替代方案 / 検討した代替案 / 고려한 대안

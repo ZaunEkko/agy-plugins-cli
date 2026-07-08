@@ -1,5 +1,5 @@
 name: 🐛 Bug Report
-description: Report a bug or issue with the agy-plugins-cli tool
+description: Report a bug or issue with the agy-plugins-cli tool / 报告 CLI 工具的 Bug
 labels: ["bug"]
 assignees: []
 
@@ -7,42 +7,52 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for reporting a bug! Please provide as much information as possible to help us reproduce and fix it.
-        感谢您报告 Bug！请尽可能提供详细信息以帮助我们重现并修复它。
+        Please select your preferred language below to help us process the issue faster.
+        请在下方选择您的首选语言，以帮助我们更快处理问题。
+        請在下方選擇您的首選語言，以幫助我們更快處理問題。
+        問題をより早く処理できるよう、以下から希望の言語を選択してください。
+        문제를 더 빨리 처리할 수 있도록 아래에서 선호하는 언어를 선택해 주세요.
         
+  - type: dropdown
+    id: language
+    attributes:
+      label: Preferred Language / 首选语言 / 首選語言 / 使用言語 / 선호하는 언어
+      options:
+        - English
+        - 简体中文
+        - 繁體中文
+        - 日本語
+        - 한국어
+    validations:
+      required: true
+
   - type: textarea
     id: description
     attributes:
-      label: Description (描述)
-      description: A clear and concise description of what the bug is.
-      placeholder: When I run `agy-plugin install...` it crashes with...
+      label: Description / 问题描述 / 問題描述 / バグの説明 / 버그 설명
+      description: A clear and concise description of what the bug is. / 简明扼要地描述 Bug。 / 簡明扼要地描述 Bug。 / バグの簡潔で明確な説明。 / 버그에 대한 명확하고 간결한 설명.
     validations:
       required: true
 
   - type: textarea
     id: reproduction
     attributes:
-      label: Steps to Reproduce (重现步骤)
-      description: Steps to reproduce the behavior.
-      placeholder: |
-        1. Run command '...'
-        2. Select '...'
-        3. See error
+      label: Steps to Reproduce / 重现步骤 / 重現步驟 / 再現手順 / 재현 단계
+      description: Steps to reproduce the behavior. / 触发 Bug 的具体操作。 / 觸發 Bug 的具體操作。 / バグを再現するための手順。 / 버그를 재현하는 단계.
     validations:
       required: true
 
   - type: textarea
     id: expected
     attributes:
-      label: Expected Behavior (预期行为)
-      description: A clear and concise description of what you expected to happen.
+      label: Expected Behavior / 预期行为 / 預期行為 / 期待される動作 / 예상되는 동작
     validations:
       required: true
 
   - type: input
     id: cli-version
     attributes:
-      label: CLI Version (CLI 版本)
+      label: CLI Version / CLI 版本 / CLI バージョン / CLI 버전
       description: Output of `agy-plugin --version`
       placeholder: v1.x.x
     validations:
@@ -51,7 +61,7 @@ body:
   - type: input
     id: node-version
     attributes:
-      label: Node.js Version (Node.js 版本)
+      label: Node.js Version / Node.js 版本 / Node.js バージョン / Node.js 버전
       description: Output of `node -v`
       placeholder: v20.x.x
     validations:
@@ -60,13 +70,12 @@ body:
   - type: input
     id: os
     attributes:
-      label: Operating System (操作系统)
-      description: What OS are you using? (e.g. Windows 11, macOS Sonoma, Ubuntu 22.04)
+      label: Operating System / 操作系统 / 作業系統 / オペレーティングシステム / 운영 체제
+      description: What OS are you using? / 您使用的操作系统是什么？ / 您使用的作業系統是什麼？ / 使用しているOSは何ですか？ / 사용 중인 OS는 무엇입니까?
     validations:
       required: true
 
   - type: textarea
     id: logs
     attributes:
-      label: Error Logs or Screenshots (错误日志或截图)
-      description: Paste any relevant terminal output, stack traces, or screenshots here.
+      label: Error Logs or Screenshots / 错误日志或截图 / 錯誤日誌或截圖 / エラーログまたはスクリーンショット / 오류 로그 또는 스크린샷
