@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import * as path from 'path';
 import * as os from 'os';
 import { addMarketplace, loadConfig } from './config';
-import { downloadPlugin, getLatestCommitSha } from './fetcher';
+import { downloadPlugin, getLatestCommitSha, listPluginsInRepo } from './fetcher';
 import { recordPluginInstall, getInstalledPlugin, loadState } from './state';
 import { disablePlugin, enablePlugin, removePlugin } from './manager';
 import ora from 'ora';
@@ -46,6 +46,40 @@ marketplaceCmd
         console.log(chalk.white(`  ${index + 1}. `) + chalk.green(`@${namespace}`) + chalk.gray(` -> ${repo}`));
       });
       console.log('');
+    }
+  });
+
+marketplaceCmd
+  .command('check <namespace>')
+  .description('Check and list all available plugins in a specific namespace (e.g. @zaunekko)')
+  .action(async (namespaceArg) => {
+    let namespace = namespaceArg.replace('@', '').toLowerCase();
+    const config = loadConfig();
+    
+    const targetRepo = config.marketplaces.find(repo => repo.toLowerCase().includes(namespace));
+    if (!targetRepo) {
+      console.error(chalk.red(`Error: Namespace '${namespace}' not found in your marketplaces.`));
+      process.exit(1);
+    }
+
+    console.log(chalk.blue(`Fetching available plugins from ${targetRepo}...`));
+    const spinner = ora(`Checking namespace @${namespace}...`).start();
+    
+    try {
+      const plugins = await listPluginsInRepo(targetRepo);
+      spinner.stop();
+      
+      if (plugins.length === 0) {
+        console.log(chalk.yellow(`No plugins found in namespace @${namespace}.`));
+      } else {
+        console.log(chalk.green.bold(`\n🔌 Plugins available in @${namespace}:`));
+        plugins.forEach(p => {
+          console.log(chalk.white(`  - `) + chalk.cyan(`${p}@${namespace}`));
+        });
+        console.log('');
+      }
+    } catch (e: any) {
+      spinner.fail(chalk.red(`Failed to check namespace @${namespace}`));
     }
   });
 
