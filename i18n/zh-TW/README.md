@@ -9,7 +9,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![NPM Version](https://img.shields.io/npm/v/agy-plugins-cli.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/agy-plugins-cli)
 [![CLI](https://img.shields.io/badge/CLI-Command_Line-black?style=for-the-badge&logo=gnometerminal)](https://github.com/ZaunEkko/agy-plugins-cli)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://github.com/ZaunEkko/agy-plugins-cli/blob/main/LICENSE)
 
 > 無縫跨越多個程式碼儲存庫安裝、更新和管理 Antigravity 外掛，提供互動式終端機面板、細粒度的命名空間支援，以及安全的上下文合併功能。
 
@@ -83,7 +83,7 @@ agy-plugin update commit-commands@zaunekko
 
 ## 📄 授權條款
 
-本專案使用 [MIT License](LICENSE) 開源。
+本專案使用 [MIT License](https://github.com/ZaunEkko/agy-plugins-cli/blob/main/LICENSE) 開源。
 
 <br />
 

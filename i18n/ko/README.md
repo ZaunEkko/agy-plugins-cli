@@ -9,7 +9,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![NPM Version](https://img.shields.io/npm/v/agy-plugins-cli.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/agy-plugins-cli)
 [![CLI](https://img.shields.io/badge/CLI-Command_Line-black?style=for-the-badge&logo=gnometerminal)](https://github.com/ZaunEkko/agy-plugins-cli)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://github.com/ZaunEkko/agy-plugins-cli/blob/main/LICENSE)
 
 > 여러 저장소에 걸쳐 Antigravity 플러그인을 완벽하게 설치, 업데이트 및 관리합니다. 대화형 터미널 UI, 세분화된 네임스페이스 지원 및 안전한 컨텍스트 병합 기능을 제공합니다.
 
@@ -83,7 +83,7 @@ agy-plugin update commit-commands@zaunekko
 
 ## 📄 라이선스
 
-이 프로젝트는 [MIT License](LICENSE)에 따라 오픈 소스로 제공됩니다.
+이 프로젝트는 [MIT License](https://github.com/ZaunEkko/agy-plugins-cli/blob/main/LICENSE)에 따라 오픈 소스로 제공됩니다.
 
 <br />
 

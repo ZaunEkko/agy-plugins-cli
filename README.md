@@ -9,7 +9,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![NPM Version](https://img.shields.io/npm/v/agy-plugins-cli.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/agy-plugins-cli)
 [![CLI](https://img.shields.io/badge/CLI-Command_Line-black?style=for-the-badge&logo=gnometerminal)](https://github.com/ZaunEkko/agy-plugins-cli)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://github.com/ZaunEkko/agy-plugins-cli/blob/main/LICENSE)
 
 > Seamlessly install, update, and manage Antigravity plugins across multiple repositories, with interactive terminal UI, granular namespace support, and secure context merging.
 
@@ -83,7 +83,7 @@ agy-plugin update commit-commands@zaunekko
 
 ## 📄 License
 
-This project is open-sourced under the [MIT License](LICENSE).
+This project is open-sourced under the [MIT License](https://github.com/ZaunEkko/agy-plugins-cli/blob/main/LICENSE).
 
 <br />
 
