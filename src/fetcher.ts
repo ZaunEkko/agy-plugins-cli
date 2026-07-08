@@ -113,13 +113,19 @@ async function checkSecurity(repo: string, pluginPath: string): Promise<boolean>
 /**
  * Fetch and download a plugin folder from GitHub
  */
-export async function downloadPlugin(repo: string, pluginPath: string, targetDir: string, skipSecurityCheck: boolean = false): Promise<void> {
+export async function downloadPlugin(repo: string, pluginPath: string, targetDir: string, skipSecurityCheck: boolean = false, rootTargetDir?: string): Promise<{files: string[], hooks: string[]}> {
   if (!skipSecurityCheck) {
     const safeToProceed = await checkSecurity(repo, pluginPath);
     if (!safeToProceed) {
       throw new Error("Installation cancelled by user due to security warning.");
     }
   }
+
+  // If this is the initial call, set rootTargetDir to targetDir
+  const activeRootTargetDir = rootTargetDir || targetDir;
+
+  let installedFiles: string[] = [];
+  let installedHooks: string[] = [];
 
   const url = `${GITHUB_API_BASE}/${repo}/contents/${pluginPath}`;
   
@@ -145,28 +151,29 @@ export async function downloadPlugin(repo: string, pluginPath: string, targetDir
         if (!fs.existsSync(localPath)) {
           fs.mkdirSync(localPath, { recursive: true });
         }
-        await downloadPlugin(repo, item.path, localPath, true); // Skip security check for subdirectories
+        const subResult = await downloadPlugin(repo, item.path, localPath, true, activeRootTargetDir);
+        installedFiles = [...installedFiles, ...subResult.files];
+        installedHooks = [...installedHooks, ...subResult.hooks];
       } else if (item.type === 'file' && item.download_url) {
         console.log(chalk.gray(`Downloading ${item.path}...`));
         const fileResponse = await axios.get(item.download_url, { responseType: 'arraybuffer' });
         
         // Handle mcp.json merge specially
-        if (item.name === 'mcp.json' && path.basename(targetDir) === '.agents') {
+        if (item.name === 'mcp.json' && targetDir === activeRootTargetDir) {
            console.log(chalk.blue(`Found mcp.json. Merging...`));
            const remoteContent = Buffer.from(fileResponse.data).toString('utf-8');
            mergeMcpConfig(localPath, remoteContent);
+           installedFiles.push(localPath);
            continue;
         }
 
         // Handle hooks.json merge specially
         if (item.name === 'hooks.json' && path.basename(path.dirname(localPath)) === 'hooks') {
-           // Actually, the path in GitHub might be `hooks/hooks.json`, which means `localPath` is `.agents/hooks/hooks.json`.
-           // But Antigravity needs it at `.agents/hooks.json`. We need to intercept this and write to `.agents/hooks.json` instead.
            console.log(chalk.blue(`Found hooks.json. Merging into root hooks.json...`));
            const remoteContent = Buffer.from(fileResponse.data).toString('utf-8');
-           // The target file should be `.agents/hooks.json`, NOT `.agents/hooks/hooks.json`
-           const rootHooksPath = path.join(process.cwd(), '.agents', 'hooks.json');
-           mergeHooksConfig(rootHooksPath, remoteContent);
+           const rootHooksPath = path.join(activeRootTargetDir, 'hooks.json');
+           const mergedKeys = mergeHooksConfig(rootHooksPath, remoteContent);
+           installedHooks = [...installedHooks, ...mergedKeys];
            continue;
         }
 
@@ -177,8 +184,11 @@ export async function downloadPlugin(repo: string, pluginPath: string, targetDir
         }
 
         fs.writeFileSync(localPath, fileResponse.data);
+        installedFiles.push(localPath);
       }
     }
+    
+    return { files: installedFiles, hooks: installedHooks };
   } catch (error: any) {
     if (error.response && error.response.status === 404) {
       console.error(chalk.red(`Error: Plugin '${pluginPath}' not found in repository '${repo}'.`));

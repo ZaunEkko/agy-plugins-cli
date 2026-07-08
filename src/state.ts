@@ -9,6 +9,8 @@ export interface InstalledPlugin {
   repo: string;
   sha: string;
   installedAt: string;
+  files?: string[];
+  hooks?: string[];
 }
 
 export interface State {
@@ -43,12 +45,14 @@ export function saveState(state: State): void {
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), 'utf-8');
 }
 
-export function recordPluginInstall(pluginName: string, repo: string, sha: string): void {
+export function recordPluginInstall(pluginName: string, repo: string, sha: string, files: string[] = [], hooks: string[] = []): void {
   const state = loadState();
   state.plugins[pluginName] = {
     repo,
     sha,
-    installedAt: new Date().toISOString()
+    installedAt: new Date().toISOString(),
+    files,
+    hooks
   };
   saveState(state);
 }
@@ -56,4 +60,10 @@ export function recordPluginInstall(pluginName: string, repo: string, sha: strin
 export function getInstalledPlugin(pluginName: string): InstalledPlugin | undefined {
   const state = loadState();
   return state.plugins[pluginName];
+}
+
+export function removePluginState(pluginName: string): void {
+  const state = loadState();
+  delete state.plugins[pluginName];
+  saveState(state);
 }
