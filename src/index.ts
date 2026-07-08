@@ -32,6 +32,23 @@ marketplaceCmd
     addMarketplace(repo);
   });
 
+marketplaceCmd
+  .command('list')
+  .description('List all registered marketplace namespaces')
+  .action(() => {
+    const config = loadConfig();
+    if (config.marketplaces.length === 0) {
+      console.log(chalk.yellow('No marketplaces registered yet.'));
+    } else {
+      console.log(chalk.blue.bold('\n📦 Registered Namespaces:'));
+      config.marketplaces.forEach((repo, index) => {
+        const namespace = repo.split('/')[0].toLowerCase();
+        console.log(chalk.white(`  ${index + 1}. `) + chalk.green(`@${namespace}`) + chalk.gray(` -> ${repo}`));
+      });
+      console.log('');
+    }
+  });
+
 program
   .command('add <plugin>')
   .description('Install a plugin (e.g. commit-commands@zaunekko)')
