@@ -6,10 +6,20 @@
   "bin": {
     "agy-plugin": "dist/index.js"
   },
+  "files": [
+    "dist/",
+    "README.md",
+    "i18n/",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
+    "prepack": "npm run build",
     "start": "ts-node src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run build && node dist/index.js --version"
+  },
+  "engines": {
+    "node": "^22.13.0 || >=23.5.0"
   },
   "keywords": [],
   "author": "",

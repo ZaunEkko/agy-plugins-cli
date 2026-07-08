@@ -23,13 +23,15 @@
 - **⚡ 极其精准的热更新**: 实时抓取远程仓库最新的 `commit` 提交指纹，支持全局、命名空间级或单一插件级别的瞬间更新。
 - **🖥️ 交互式终端面板 (TUI)**: 基于 `@clack/prompts` 构建了炫酷的终端图形界面，支持全盘浏览、更新状态检测以及一键批量安装插件。
 - **🔐 零配置接入私有仓库**: 原生检测并利用您本地的 `gh auth token` 绕过 GitHub API 的速率限制，从而无缝访问企业的私有插件库。
-- **🛡️ 安全合并 Hooks 与 MCP**: 在向您的全局工作区自动合并多个 `hooks.json` 和 `mcp.json` 时，通过 JSON 字符串深度去重技术，确保不会覆盖现有服务器或触发重复的钩子脚本。
+- **🛡️ 合并 Hooks 与 MCP**: 将远程 `hooks.json` 和 `mcp.json` 合并到您的 Antigravity 配置中。Hook 数组会自动去重，同名 MCP server 会在提示 warning 后被新配置替换。
 
 <br />
 
 ## 📦 安装指南
 
 想要在您的机器上全局安装 `agy-plugins-cli`，只需运行：
+
+需要 Node.js `^22.13.0 || >=23.5.0`。
 
 ```bash
 npm install -g agy-plugins-cli@latest
@@ -77,7 +79,7 @@ agy-plugin update commit-commands@zaunekko
 
 ## 🧠 架构与安全
 
-- **版本指纹追踪**: `agy-plugin` 会将已下载目录的最新 Git `sha` 缓存至本地的 `~/.gemini/config/state.json` 文件中，这使得智能增量更新成为可能，并能在 TUI 面板中向您展示直观的视觉反馈（已安装 vs 有更新可用）。
+- **版本指纹追踪**: `agy-plugin` 会将已下载目录的最新 Git `sha` 缓存至本地的 `~/.agy-plugin/installed.json`，并将 marketplace 配置保存在 `~/.agy-plugin/config.json`。这使得智能增量更新成为可能，并能在 TUI 面板中向您展示直观的视觉反馈（已安装 vs 有更新可用）。
 - **动态上下文注入**: Antigravity 会原生加载被放入 `.gemini/config/` 目录的所有内容。本 CLI 完美扮演了连接远程社区仓库与您本地 AI 脑容量的安全桥梁。
 - **与 `gh` CLI 深度集成**: 在底层逻辑中，如果未发现环境变量 `GITHUB_TOKEN`，本工具将尝试通过 `gh auth token` 命令自动提取本地授权令牌，以确保您的本地 Git 工作流绝对不被打断。
 
