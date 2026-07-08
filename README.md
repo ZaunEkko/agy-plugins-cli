@@ -43,7 +43,20 @@ npm install -g agy-plugins-cli@latest
 
 ## 🚀 Quick Start
 
-### 1. Add and Explore Marketplaces
+### ⚖️ Choose Your Installation Method
+
+Both methods are 100% compatible and will deduplicate hooks/skills if used simultaneously!
+
+| Feature | Official CLI (`agy plugin install`) | Custom CLI (`agy-plugin add`) |
+|---------|-------------------------------------|-------------------------------|
+| **Style** | Native, command-line only | Interactive TUI, dashboard style |
+| **Source** | Git URL (`https://...git`) | Namespace (`plugin@namespace`) |
+| **Hooks** | Background dynamic mount (hidden from `/hooks`) | Force-merged (visible in `/hooks` TUI) |
+| **Updates** | Manual re-clone | One-click batch updates (`agy-plugin update`) |
+
+---
+
+### 1. Add and Explore Marketplaces (Custom CLI Method)
 Link a GitHub repository to your local registry and explore its plugins interactively.
 ```bash
 # Add a repository as a marketplace
