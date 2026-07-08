@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import * as readline from 'readline';
 import { execSync } from 'child_process';
 import { mergeMcpConfig } from './mcp-merger';
+import { mergeHooksConfig } from './hooks-merger';
 
 let cachedToken: string | null = null;
 function getGithubToken(): string | null {
@@ -154,6 +155,18 @@ export async function downloadPlugin(repo: string, pluginPath: string, targetDir
            console.log(chalk.blue(`Found mcp.json. Merging...`));
            const remoteContent = Buffer.from(fileResponse.data).toString('utf-8');
            mergeMcpConfig(localPath, remoteContent);
+           continue;
+        }
+
+        // Handle hooks.json merge specially
+        if (item.name === 'hooks.json' && path.basename(path.dirname(localPath)) === 'hooks') {
+           // Actually, the path in GitHub might be `hooks/hooks.json`, which means `localPath` is `.agents/hooks/hooks.json`.
+           // But Antigravity needs it at `.agents/hooks.json`. We need to intercept this and write to `.agents/hooks.json` instead.
+           console.log(chalk.blue(`Found hooks.json. Merging into root hooks.json...`));
+           const remoteContent = Buffer.from(fileResponse.data).toString('utf-8');
+           // The target file should be `.agents/hooks.json`, NOT `.agents/hooks/hooks.json`
+           const rootHooksPath = path.join(process.cwd(), '.agents', 'hooks.json');
+           mergeHooksConfig(rootHooksPath, remoteContent);
            continue;
         }
 
