@@ -9,7 +9,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![NPM Version](https://img.shields.io/npm/v/agy-plugins-cli.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/agy-plugins-cli)
 [![CLI](https://img.shields.io/badge/CLI-Command_Line-black?style=for-the-badge&logo=gnometerminal)](https://github.com/ZaunEkko/agy-plugins-cli)
-[![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](#)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
 > Seamlessly install, update, and manage Antigravity plugins across multiple repositories, with interactive terminal UI, granular namespace support, and secure context merging.
 
@@ -80,6 +80,10 @@ agy-plugin update commit-commands@zaunekko
 - **Fingerprint Tracking**: `agy-plugin` caches the latest Git `sha` for downloaded directories in `~/.gemini/config/state.json`, enabling intelligent delta-updates and distinct visual states (Installed vs Update Available) in the TUI.
 - **Dynamic Context Injection**: Antigravity natively loads everything dropped into the `.gemini/config/` directory. Our CLI acts as the secure bridge between remote community repos and your local AI context.
 - **`gh` CLI Integration**: Under the hood, if `GITHUB_TOKEN` is missing, the tool attempts to extract tokens via `gh auth token` to ensure your local git workflow is entirely uninterrupted.
+
+## 📄 License
+
+This project is open-sourced under the [MIT License](LICENSE).
 
 <br />
 

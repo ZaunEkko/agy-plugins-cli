@@ -9,7 +9,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![NPM Version](https://img.shields.io/npm/v/agy-plugins-cli.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/agy-plugins-cli)
 [![CLI](https://img.shields.io/badge/CLI-Command_Line-black?style=for-the-badge&logo=gnometerminal)](https://github.com/ZaunEkko/agy-plugins-cli)
-[![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](#)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
 > 无缝跨越多个代码仓库安装、更新和管理 Antigravity 插件，提供交互式终端面板、细粒度的命名空间支持，以及安全的上下文合并功能。
 
@@ -80,6 +80,10 @@ agy-plugin update commit-commands@zaunekko
 - **版本指纹追踪**: `agy-plugin` 会将已下载目录的最新 Git `sha` 缓存至本地的 `~/.gemini/config/state.json` 文件中，这使得智能增量更新成为可能，并能在 TUI 面板中向您展示直观的视觉反馈（已安装 vs 有更新可用）。
 - **动态上下文注入**: Antigravity 会原生加载被放入 `.gemini/config/` 目录的所有内容。本 CLI 完美扮演了连接远程社区仓库与您本地 AI 脑容量的安全桥梁。
 - **与 `gh` CLI 深度集成**: 在底层逻辑中，如果未发现环境变量 `GITHUB_TOKEN`，本工具将尝试通过 `gh auth token` 命令自动提取本地授权令牌，以确保您的本地 Git 工作流绝对不被打断。
+
+## 📄 许可证
+
+本项目使用 [MIT License](LICENSE) 开源。
 
 <br />
 

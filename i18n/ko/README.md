@@ -9,7 +9,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![NPM Version](https://img.shields.io/npm/v/agy-plugins-cli.svg?style=for-the-badge&logo=npm)](https://www.npmjs.com/package/agy-plugins-cli)
 [![CLI](https://img.shields.io/badge/CLI-Command_Line-black?style=for-the-badge&logo=gnometerminal)](https://github.com/ZaunEkko/agy-plugins-cli)
-[![License](https://img.shields.io/badge/License-ISC-blue?style=for-the-badge)](#)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
 > 여러 저장소에 걸쳐 Antigravity 플러그인을 완벽하게 설치, 업데이트 및 관리합니다. 대화형 터미널 UI, 세분화된 네임스페이스 지원 및 안전한 컨텍스트 병합 기능을 제공합니다.
 
@@ -80,6 +80,10 @@ agy-plugin update commit-commands@zaunekko
 - **지문 추적**: `agy-plugin`은 다운로드한 디렉토리의 최신 Git `sha`를 로컬 `~/.gemini/config/state.json`에 캐시합니다. 이를 통해 지능형 델타 업데이트가 가능하며 TUI 패널에서 직관적인 시각적 피드백(설치됨 vs 업데이트 가능)을 제공합니다.
 - **동적 컨텍스트 주입**: Antigravity는 `.gemini/config/` 디렉토리에 배치된 모든 콘텐츠를 기본적으로 로드합니다. 이 CLI는 원격 커뮤니티 저장소와 로컬 AI 컨텍스트를 연결하는 안전한 브리지 역할을 합니다.
 - **`gh` CLI 통합**: 내부적으로 `GITHUB_TOKEN` 환경 변수를 찾을 수 없는 경우 도구는 `gh auth token` 명령을 통해 토큰을 추출하려고 시도합니다. 이를 통해 로컬 Git 워크플로가 방해받지 않도록 보장합니다.
+
+## 📄 라이선스
+
+이 프로젝트는 [MIT License](LICENSE)에 따라 오픈 소스로 제공됩니다.
 
 <br />
 
