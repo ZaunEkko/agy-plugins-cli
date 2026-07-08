@@ -79,6 +79,7 @@ agy-plugin update commit-commands@zaunekko
 
 ## 🧠 Architecture & Security
 
+- **Official CLI Compatibility & Deduplication**: Fully compatible with the native `agy plugin install <git-url>` mechanism. Whether you install a plugin via our TUI, the native CLI, or both simultaneously, Antigravity gracefully deduplicates hooks and skills by ID/name, ensuring a robust, conflict-free ecosystem.
 - **Fingerprint Tracking**: `agy-plugin` caches the latest Git `sha` for downloaded directories in `~/.agy-plugin/installed.json`, while marketplace configuration lives in `~/.agy-plugin/config.json`. This enables intelligent delta-updates and distinct visual states (Installed vs Update Available) in the TUI.
 - **Dynamic Context Injection**: Antigravity natively loads everything dropped into the `.gemini/config/` directory. Our CLI acts as the secure bridge between remote community repos and your local AI context.
 - **`gh` CLI Integration**: Under the hood, if `GITHUB_TOKEN` is missing, the tool attempts to extract tokens via `gh auth token` to ensure your local git workflow is entirely uninterrupted.
