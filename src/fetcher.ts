@@ -198,3 +198,35 @@ export async function downloadPlugin(repo: string, pluginPath: string, targetDir
     throw error;
   }
 }
+
+/**
+ * List all available plugins (directories) in a remote repository
+ */
+export async function listPluginsInRepo(repo: string): Promise<string[]> {
+  const url = `${GITHUB_API_BASE}/${repo}/contents/`;
+  try {
+    const headers: any = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'agy-plugins-cli'
+    };
+    const token = getGithubToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await axios.get<GithubContent[]>(url, { headers });
+    
+    // Return all directories that aren't dotfiles
+    return response.data
+      .filter(item => item.type === 'dir' && !item.name.startsWith('.'))
+      .map(item => item.name);
+      
+  } catch (error: any) {
+    if (error.response && error.response.status === 404) {
+      console.error(chalk.red(`Error: Repository '${repo}' not found.`));
+    } else {
+      console.error(chalk.red(`Failed to fetch repository contents: ${error.message}`));
+    }
+    return [];
+  }
+}
