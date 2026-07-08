@@ -180,7 +180,7 @@ export async function downloadPlugin(repo: string, pluginPath: string, targetDir
         }
 
         // Handle hooks.json merge specially
-        if (item.name === 'hooks.json' && path.basename(path.dirname(localPath)) === 'hooks') {
+        if (item.name === 'hooks.json' && targetDir === activeRootTargetDir) {
            console.log(chalk.blue(`Found hooks.json. Merging into root hooks.json...`));
            const remoteContent = Buffer.from(fileResponse.data).toString('utf-8');
            const rootHooksPath = path.join(activeRootTargetDir, 'hooks.json');
