@@ -2,9 +2,11 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import * as path from 'path';
+import * as os from 'os';
 import { addMarketplace, loadConfig } from './config';
 import { downloadPlugin, getLatestCommitSha } from './fetcher';
 import { recordPluginInstall, getInstalledPlugin, loadState } from './state';
+import { disablePlugin, enablePlugin, removePlugin } from './manager';
 import ora from 'ora';
 
 const program = new Command();
@@ -14,7 +16,10 @@ program
   .description('Antigravity CLI Package Manager')
   .version('1.0.0');
 
-// "marketplace" command
+const getTargetDir = (isLocal: boolean) => {
+  return isLocal ? path.join(process.cwd(), '.agents') : path.join(os.homedir(), '.gemini', 'config');
+};
+
 const marketplaceCmd = program
   .command('marketplace')
   .description('Manage plugin marketplaces');
@@ -27,11 +32,11 @@ marketplaceCmd
     addMarketplace(repo);
   });
 
-// "add" command
 program
   .command('add <plugin>')
   .description('Install a plugin (e.g. commit-commands@zaunekko)')
-  .action(async (pluginArg) => {
+  .option('-l, --local', 'Install locally to the current project instead of globally')
+  .action(async (pluginArg, options) => {
     let pluginName = pluginArg;
     let namespace = null;
 
@@ -62,12 +67,12 @@ program
     
     const spinner = ora(`Downloading ${pluginName}...`).start();
     try {
-      const targetDir = path.join(process.cwd(), '.agents');
-      await downloadPlugin(targetRepo, pluginName, targetDir);
+      const targetDir = getTargetDir(options.local);
+      const result = await downloadPlugin(targetRepo!, pluginName, targetDir);
       
-      const sha = await getLatestCommitSha(targetRepo, pluginName);
+      const sha = await getLatestCommitSha(targetRepo!, pluginName);
       if (sha) {
-        recordPluginInstall(pluginName, targetRepo, sha);
+        recordPluginInstall(pluginArg, targetRepo!, sha, result.files, result.hooks);
       }
       
       spinner.succeed(chalk.green(`Successfully installed ${pluginName} to ${targetDir}`));
@@ -77,11 +82,11 @@ program
     }
   });
 
-// "update" command
 program
   .command('update [plugin]')
   .description('Update a specific plugin or all installed plugins')
-  .action(async (pluginName) => {
+  .option('-l, --local', 'Update locally to the current project instead of globally')
+  .action(async (pluginName, options) => {
     const state = loadState();
     const pluginsToUpdate = pluginName ? [pluginName] : Object.keys(state.plugins);
     
@@ -97,8 +102,13 @@ program
         continue;
       }
 
+      let actualPluginName = name;
+      if (name.includes('@')) {
+        actualPluginName = name.split('@')[0];
+      }
+
       console.log(chalk.blue(`Checking for updates: ${name}...`));
-      const latestSha = await getLatestCommitSha(installed.repo, name);
+      const latestSha = await getLatestCommitSha(installed.repo, actualPluginName);
       
       if (!latestSha) {
         console.log(chalk.yellow(`Could not fetch version info for ${name}. Skipping.`));
@@ -111,15 +121,39 @@ program
         console.log(chalk.cyan(`Update found for ${name}. Downloading new version...`));
         const spinner = ora(`Updating ${name}...`).start();
         try {
-          const targetDir = path.join(process.cwd(), '.agents');
-          await downloadPlugin(installed.repo, name, targetDir, true); // skip security prompt on update
-          recordPluginInstall(name, installed.repo, latestSha);
+          const targetDir = getTargetDir(options.local);
+          const result = await downloadPlugin(installed.repo, actualPluginName, targetDir, true);
+          recordPluginInstall(name, installed.repo, latestSha, result.files, result.hooks);
           spinner.succeed(chalk.green(`Successfully updated ${name}.`));
         } catch (error) {
           spinner.fail(chalk.red(`Failed to update ${name}.`));
         }
       }
     }
+  });
+
+program
+  .command('disable <plugin>')
+  .description('Disable an installed plugin')
+  .option('-l, --local', 'Disable from the local project instead of globally')
+  .action((pluginName, options) => {
+    disablePlugin(pluginName, getTargetDir(options.local));
+  });
+
+program
+  .command('enable <plugin>')
+  .description('Enable a disabled plugin')
+  .option('-l, --local', 'Enable from the local project instead of globally')
+  .action((pluginName, options) => {
+    enablePlugin(pluginName, getTargetDir(options.local));
+  });
+
+program
+  .command('remove <plugin>')
+  .description('Uninstall a plugin and remove its files')
+  .option('-l, --local', 'Remove from the local project instead of globally')
+  .action((pluginName, options) => {
+    removePlugin(pluginName, getTargetDir(options.local));
   });
 
 program.parse(process.argv);

@@ -22,7 +22,7 @@ function mergeHooksConfigData(target: any, source: any) {
   }
 }
 
-export function mergeHooksConfig(targetPath: string, remoteContent: string) {
+export function mergeHooksConfig(targetPath: string, remoteContent: string): string[] {
   let targetData: any = {};
   
   if (fs.existsSync(targetPath)) {
@@ -38,11 +38,13 @@ export function mergeHooksConfig(targetPath: string, remoteContent: string) {
     remoteData = JSON.parse(remoteContent);
   } catch (e) {
     console.error(chalk.red(`Error parsing remote hooks.json content.`));
-    return;
+    return [];
   }
 
   mergeHooksConfigData(targetData, remoteData);
 
   fs.writeFileSync(targetPath, JSON.stringify(targetData, null, 2), 'utf-8');
   console.log(chalk.green(`✓ Successfully merged hooks.json into ${targetPath}`));
+  
+  return Object.keys(remoteData);
 }
