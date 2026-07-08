@@ -92,7 +92,7 @@ async function runCheckCommand(namespaceArg: string) {
           const dateStr = p.date ? chalk.gray(` (updated ${new Date(p.date).toISOString().split('T')[0]})`) : '';
           
           let statusStr = '';
-          const installedPlugin = state.plugins[`${p.name}@${namespace}`];
+          const installedPlugin = state.plugins[p.name] || state.plugins[`${p.name}@${namespace}`];
           let colorize = chalk.white;
           
           if (installedPlugin) {
@@ -110,7 +110,7 @@ async function runCheckCommand(namespaceArg: string) {
             label: `${colorize(p.name)}${statusStr}${dateStr}`
           };
         }),
-        initialValues: plugins.filter(p => installedPlugins.includes(`${p.name}@${namespace}`)).map(p => p.name),
+        initialValues: plugins.filter(p => installedPlugins.includes(p.name) || installedPlugins.includes(`${p.name}@${namespace}`)).map(p => p.name),
         required: false,
       });
 
@@ -122,7 +122,7 @@ async function runCheckCommand(namespaceArg: string) {
       if (toInstall.length > 0) {
         for (const p of toInstall) {
            // Skip if already installed
-           if (!installedPlugins.includes(`${p}@${namespace}`)) {
+           if (!installedPlugins.includes(p) && !installedPlugins.includes(`${p}@${namespace}`)) {
              console.log(chalk.blue(`\nInstalling ${p}...`));
              const targetDir = getTargetDir(false);
              try {
