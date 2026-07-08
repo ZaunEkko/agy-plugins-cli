@@ -251,30 +251,21 @@ program
   .description('Install a plugin (e.g. commit-commands@zaunekko)')
   .option('-l, --local', 'Install locally to the current project instead of globally')
   .action(async (pluginArg, options) => {
-    let pluginName = pluginArg;
-    let namespace = null;
-
-    if (pluginArg.includes('@')) {
-      const parts = pluginArg.split('@');
-      pluginName = parts[0];
-      namespace = parts[1];
+    if (!pluginArg.includes('@')) {
+      console.error(chalk.red(`Error: Please specify the marketplace namespace (e.g., ${pluginArg}@zaunekko)`));
+      process.exit(1);
     }
 
-    const config = loadConfig();
-    let targetRepo: string | undefined;
+    const parts = pluginArg.split('@');
+    const pluginName = parts[0];
+    const namespace = parts[1];
 
-    if (namespace) {
-      targetRepo = config.marketplaces.find(repo => repo.toLowerCase().includes(namespace!.toLowerCase()));
-      if (!targetRepo) {
-        console.error(chalk.red(`Error: Namespace '${namespace}' not found in your marketplaces.`));
-        process.exit(1);
-      }
-    } else {
-      if (config.marketplaces.length === 0) {
-        console.error(chalk.red(`Error: No marketplaces configured.`));
-        process.exit(1);
-      }
-      targetRepo = config.marketplaces[0];
+    const config = loadConfig();
+    const targetRepo = config.marketplaces.find(repo => repo.toLowerCase().includes(namespace.toLowerCase()));
+    
+    if (!targetRepo) {
+      console.error(chalk.red(`Error: Namespace '${namespace}' not found in your marketplaces.`));
+      process.exit(1);
     }
 
     console.log(chalk.green(`Installing plugin: ${pluginName} from repository: ${targetRepo}`));
@@ -282,11 +273,11 @@ program
     const spinner = ora(`Downloading ${pluginName}...`).start();
     try {
       const targetDir = getTargetDir(options.local);
-      const result = await downloadPlugin(targetRepo!, pluginName, targetDir);
+      const result = await downloadPlugin(targetRepo, pluginName, targetDir);
       
-      const sha = await getLatestCommitSha(targetRepo!, pluginName);
+      const sha = await getLatestCommitSha(targetRepo, pluginName);
       if (sha) {
-        recordPluginInstall(pluginArg, targetRepo!, sha, result.files, result.hooks);
+        recordPluginInstall(pluginArg, targetRepo, sha, result.files, result.hooks);
       }
       
       spinner.succeed(chalk.green(`Successfully installed ${pluginName} to ${targetDir}`));
@@ -297,12 +288,39 @@ program
   });
 
 program
-  .command('update [plugin]')
-  .description('Update a specific plugin or all installed plugins')
+  .command('update [target]')
+  .description('Update all plugins, a specific plugin (e.g. plugin@namespace), or a whole namespace (e.g. @namespace)')
   .option('-l, --local', 'Update locally to the current project instead of globally')
-  .action(async (pluginName, options) => {
+  .action(async (targetArg, options) => {
     const state = loadState();
-    const pluginsToUpdate = pluginName ? [pluginName] : Object.keys(state.plugins);
+    let pluginsToUpdate: string[] = [];
+
+    if (!targetArg) {
+      // Update ALL installed plugins
+      pluginsToUpdate = Object.keys(state.plugins);
+    } else if (targetArg.startsWith('@')) {
+      // Update ALL plugins in a specific namespace
+      const namespace = targetArg.replace('@', '').toLowerCase();
+      const config = loadConfig();
+      const targetRepo = config.marketplaces.find(repo => repo.toLowerCase().includes(namespace));
+      
+      if (!targetRepo) {
+        console.error(chalk.red(`Error: Namespace '${namespace}' not found in your marketplaces.`));
+        process.exit(1);
+      }
+      
+      pluginsToUpdate = Object.entries(state.plugins)
+        .filter(([k, v]) => v.repo === targetRepo)
+        .map(([k, v]) => k);
+        
+      if (pluginsToUpdate.length === 0) {
+        console.log(chalk.yellow(`No plugins installed from namespace @${namespace}.`));
+        return;
+      }
+    } else {
+      // Update a specific plugin
+      pluginsToUpdate = [targetArg];
+    }
     
     if (pluginsToUpdate.length === 0) {
       console.log(chalk.yellow(`No plugins installed yet.`));
@@ -321,7 +339,7 @@ program
         actualPluginName = name.split('@')[0];
       }
 
-      console.log(chalk.blue(`Checking for updates: ${name}...`));
+      console.log(chalk.blue(`\nChecking for updates: ${name}...`));
       const latestSha = await getLatestCommitSha(installed.repo, actualPluginName);
       
       if (!latestSha) {
