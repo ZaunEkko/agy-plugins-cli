@@ -32,142 +32,177 @@ marketplaceCmd
     addMarketplace(repo);
   });
 
+async function runCheckCommand(namespaceArg: string) {
+  let namespace = namespaceArg.replace('@', '').toLowerCase();
+  const config = loadConfig();
+  const state = loadState();
+  
+  const targetRepo = config.marketplaces.find(repo => repo.toLowerCase().includes(namespace));
+  if (!targetRepo) {
+    console.error(chalk.red(`Error: Namespace '${namespace}' not found in your marketplaces.`));
+    process.exit(1);
+  }
+
+  const s = ora(`Checking namespace @${namespace}...`).start();
+  let plugins: {name: string, date: string | null}[] = [];
+  try {
+    plugins = await listPluginsInRepo(targetRepo);
+    s.stop();
+  } catch (e: any) {
+    s.fail(chalk.red(`Failed to check namespace @${namespace}`));
+    return;
+  }
+
+  // Dynamic import to support ESM-only clack/prompts
+  const { select, isCancel, multiselect } = await import('@clack/prompts');
+
+  const installedPlugins = Object.entries(state.plugins).filter(([k, v]) => v.repo === targetRepo).map(([k, v]) => k);
+  
+  console.clear();
+  console.log(chalk.white.bold(namespace));
+  console.log(chalk.gray(targetRepo) + '\n');
+  console.log(chalk.white(`${plugins.length} available plugins\n`));
+
+  if (installedPlugins.length > 0) {
+    console.log(chalk.white.bold(`Installed plugins (${installedPlugins.length}):`));
+    installedPlugins.forEach(p => {
+      console.log(chalk.gray(`● `) + chalk.white(p.split('@')[0]));
+    });
+    console.log('');
+  }
+
+  const action = await select({
+    message: 'Select an action (Enter to select • Esc to go back)',
+    options: [
+      { value: 'browse', label: `> Browse plugins (${plugins.length})` },
+      { value: 'update', label: `  Update marketplace` },
+      { value: 'remove', label: `  Remove marketplace` }
+    ],
+  });
+
+  if (isCancel(action)) {
+    process.exit(0);
+  }
+
+  if (action === 'browse') {
+    const selectedPlugins = await multiselect({
+      message: 'Select plugins to install (Space to select, Enter to confirm)',
+      options: plugins.map(p => ({
+        value: p.name,
+        label: p.name,
+        hint: p.date ? `updated ${new Date(p.date).toISOString().split('T')[0]}` : ''
+      })),
+      required: false,
+    });
+
+    if (isCancel(selectedPlugins)) {
+      process.exit(0);
+    }
+
+    const toInstall = selectedPlugins as string[];
+    if (toInstall.length > 0) {
+      for (const p of toInstall) {
+         console.log(chalk.blue(`\nInstalling ${p}...`));
+         const targetDir = getTargetDir(false);
+         try {
+           const result = await downloadPlugin(targetRepo, p, targetDir);
+           const sha = await getLatestCommitSha(targetRepo, p);
+           if (sha) {
+             recordPluginInstall(`${p}@${namespace}`, targetRepo, sha, result.files, result.hooks);
+           }
+           console.log(chalk.green(`✓ Successfully installed ${p}`));
+         } catch (e) {
+           console.log(chalk.red(`Failed to install ${p}`));
+         }
+      }
+    }
+  } else if (action === 'update') {
+    console.log(chalk.yellow('Update marketplace feature coming soon!'));
+  } else if (action === 'remove') {
+    console.log(chalk.yellow('Remove marketplace feature coming soon!'));
+  }
+}
+
 marketplaceCmd
   .command('list')
   .description('List all registered marketplace namespaces')
   .action(async () => {
     const config = loadConfig();
-    if (config.marketplaces.length === 0) {
-      console.log(chalk.yellow('No marketplaces registered yet.'));
-      return;
-    }
-    
-    console.log(chalk.white.bold('\nManage marketplaces\n'));
-    console.log(chalk.blue('> + Add Marketplace\n'));
-    
-    const state = loadState();
-
-    for (const repo of config.marketplaces) {
-      const namespace = repo.split('/')[0].toLowerCase();
-      
-      let availableCount = 0;
-      let lastUpdated = 'unknown';
-      
-      try {
-        const plugins = await listPluginsInRepo(repo);
-        availableCount = plugins.length;
-        if (plugins.length > 0) {
-          const latestDateStr = plugins.reduce((max, p) => p.date && (!max || new Date(p.date) > new Date(max)) ? p.date : max, null as string | null);
-          if (latestDateStr) {
-            const d = new Date(latestDateStr);
-            lastUpdated = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
-          }
-        }
-      } catch (e) {
-        // Ignore fetch error and keep defaults
-      }
-
-      const installedCount = Object.values(state.plugins).filter(p => p.repo === repo).length;
-
-      console.log(chalk.gray(`  ● `) + chalk.white.bold(namespace));
-      console.log(chalk.gray(`    ${repo}`));
-      console.log(chalk.gray(`    ${availableCount} available • ${installedCount} installed • Updated ${lastUpdated}\n`));
-    }
-  });
-
-marketplaceCmd
-  .command('check <namespace>')
-  .description('Check and list all available plugins in a specific namespace (e.g. @zaunekko)')
-  .action(async (namespaceArg) => {
-    let namespace = namespaceArg.replace('@', '').toLowerCase();
-    const config = loadConfig();
     const state = loadState();
     
-    const targetRepo = config.marketplaces.find(repo => repo.toLowerCase().includes(namespace));
-    if (!targetRepo) {
-      console.error(chalk.red(`Error: Namespace '${namespace}' not found in your marketplaces.`));
-      process.exit(1);
-    }
-
-    const s = ora(`Checking namespace @${namespace}...`).start();
-    let plugins: {name: string, date: string | null}[] = [];
-    try {
-      plugins = await listPluginsInRepo(targetRepo);
-      s.stop();
-    } catch (e: any) {
-      s.fail(chalk.red(`Failed to check namespace @${namespace}`));
-      return;
-    }
-
     // Dynamic import to support ESM-only clack/prompts
-    const { select, isCancel, multiselect } = await import('@clack/prompts');
+    const { select, isCancel, text } = await import('@clack/prompts');
 
-    const installedPlugins = Object.entries(state.plugins).filter(([k, v]) => v.repo === targetRepo).map(([k, v]) => k);
-    
-    console.clear();
-    console.log(chalk.white.bold(namespace));
-    console.log(chalk.gray(targetRepo) + '\n');
-    console.log(chalk.white(`${plugins.length} available plugins\n`));
+    let options: { value: string, label: string, hint?: string }[] = [];
+    options.push({ value: 'add', label: chalk.blue('> + Add Marketplace') });
 
-    if (installedPlugins.length > 0) {
-      console.log(chalk.white.bold(`Installed plugins (${installedPlugins.length}):`));
-      installedPlugins.forEach(p => {
-        console.log(chalk.gray(`● `) + chalk.white(p.split('@')[0]));
-      });
-      console.log('');
+    if (config.marketplaces.length > 0) {
+      const s = ora('Loading marketplaces...').start();
+      for (const repo of config.marketplaces) {
+        const namespace = repo.split('/')[0].toLowerCase();
+        
+        let availableCount = 0;
+        let lastUpdated = 'unknown';
+        
+        try {
+          const plugins = await listPluginsInRepo(repo);
+          availableCount = plugins.length;
+          if (plugins.length > 0) {
+            const latestDateStr = plugins.reduce((max, p) => p.date && (!max || new Date(p.date) > new Date(max)) ? p.date : max, null as string | null);
+            if (latestDateStr) {
+              const d = new Date(latestDateStr);
+              lastUpdated = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+            }
+          }
+        } catch (e) {
+          // Ignore fetch error and keep defaults
+        }
+
+        const installedCount = Object.values(state.plugins).filter(p => p.repo === repo).length;
+
+        options.push({
+          value: namespace,
+          label: chalk.white(`● `) + chalk.white.bold(namespace) + chalk.gray(`  (${repo})`),
+          hint: `${availableCount} available • ${installedCount} installed • Updated ${lastUpdated}`
+        });
+      }
+      s.stop();
     }
 
+    console.clear();
     const action = await select({
-      message: 'Select an action (Enter to select • Esc to go back)',
-      options: [
-        { value: 'browse', label: `> Browse plugins (${plugins.length})` },
-        { value: 'update', label: `  Update marketplace` },
-        { value: 'remove', label: `  Remove marketplace` }
-      ],
+      message: 'Manage marketplaces',
+      options,
     });
 
     if (isCancel(action)) {
       process.exit(0);
     }
 
-    if (action === 'browse') {
-      const selectedPlugins = await multiselect({
-        message: 'Select plugins to install (Space to select, Enter to confirm)',
-        options: plugins.map(p => ({
-          value: p.name,
-          label: p.name,
-          hint: p.date ? `updated ${new Date(p.date).toISOString().split('T')[0]}` : ''
-        })),
-        required: false,
+    if (action === 'add') {
+      const repo = await text({
+        message: 'Enter the GitHub repository path (e.g., ZaunEkko/agy-plugins):',
+        placeholder: 'username/repo',
+        validate(value) {
+          if (!value) return 'Repository path is required!';
+          if (!value.includes('/')) return 'Must be in username/repo format!';
+        }
       });
-
-      if (isCancel(selectedPlugins)) {
+      if (isCancel(repo)) {
         process.exit(0);
       }
-
-      const toInstall = selectedPlugins as string[];
-      if (toInstall.length > 0) {
-        for (const p of toInstall) {
-           console.log(chalk.blue(`\nInstalling ${p}...`));
-           const targetDir = getTargetDir(false);
-           try {
-             const result = await downloadPlugin(targetRepo, p, targetDir);
-             const sha = await getLatestCommitSha(targetRepo, p);
-             if (sha) {
-               recordPluginInstall(`${p}@${namespace}`, targetRepo, sha, result.files, result.hooks);
-             }
-             console.log(chalk.green(`✓ Successfully installed ${p}`));
-           } catch (e) {
-             console.log(chalk.red(`Failed to install ${p}`));
-           }
-        }
-      }
-    } else if (action === 'update') {
-      console.log(chalk.yellow('Update marketplace feature coming soon!'));
-    } else if (action === 'remove') {
-      console.log(chalk.yellow('Remove marketplace feature coming soon!'));
+      addMarketplace(repo as string);
+      console.log(chalk.green(`\n✓ Successfully added marketplace: ${repo}`));
+      console.log(chalk.gray(`Tip: Run 'agy-plugin marketplace list' again to explore it.`));
+    } else {
+      await runCheckCommand(action as string);
     }
   });
+
+marketplaceCmd
+  .command('check <namespace>')
+  .description('Check and list all available plugins in a specific namespace (e.g. @zaunekko)')
+  .action(runCheckCommand);
 
 program
   .command('add <plugin>')
