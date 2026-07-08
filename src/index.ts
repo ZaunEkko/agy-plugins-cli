@@ -43,7 +43,7 @@ async function runCheckCommand(namespaceArg: string) {
   }
 
   const s = ora(`Checking namespace @${namespace}...`).start();
-  let plugins: {name: string, date: string | null}[] = [];
+  let plugins: {name: string, date: string | null, sha: string | null}[] = [];
   try {
     plugins = await listPluginsInRepo(targetRepo);
     s.stop();
@@ -90,9 +90,24 @@ async function runCheckCommand(namespaceArg: string) {
         message: 'Select plugins to install (Space to select, Enter to confirm, Esc to go back)',
         options: plugins.map(p => {
           const dateStr = p.date ? chalk.gray(` (updated ${new Date(p.date).toISOString().split('T')[0]})`) : '';
+          
+          let statusStr = '';
+          const installedPlugin = state.plugins[`${p.name}@${namespace}`];
+          let colorize = chalk.white;
+          
+          if (installedPlugin) {
+             if (p.sha && p.sha !== installedPlugin.sha) {
+               statusStr = chalk.yellow(' (★ Update available)');
+               colorize = chalk.yellow;
+             } else {
+               statusStr = chalk.green(' (✔ Installed)');
+               colorize = chalk.green;
+             }
+          }
+
           return {
             value: p.name,
-            label: `${p.name}${dateStr}`
+            label: `${colorize(p.name)}${statusStr}${dateStr}`
           };
         }),
         initialValues: plugins.filter(p => installedPlugins.includes(`${p.name}@${namespace}`)).map(p => p.name),
