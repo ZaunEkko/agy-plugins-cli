@@ -1,9 +1,7 @@
 <div align="center">
 
-# 🚀 Antigravity CLI Package Manager
-**The official, ultra-fast plugin manager for Google Antigravity (agy).**
-
-[English](README.md) · [简体中文](i18n/zh-CN/README.md) · [繁體中文](i18n/zh-TW/README.md) · [日本語](i18n/ja/README.md) · [한국어](i18n/ko/README.md)
+# 🚀 Antigravity CLI 패키지 관리자
+**Google Antigravity (agy) 공식 플러그인 관리자.**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
