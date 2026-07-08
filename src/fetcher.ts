@@ -214,7 +214,7 @@ export async function downloadPlugin(repo: string, pluginPath: string, targetDir
 /**
  * List all available plugins (directories) in a remote repository along with update date
  */
-export async function listPluginsInRepo(repo: string): Promise<{name: string, date: string | null}[]> {
+export async function listPluginsInRepo(repo: string): Promise<{name: string, date: string | null, sha: string | null}[]> {
   const url = `${GITHUB_API_BASE}/${repo}/contents/`;
   try {
     const headers: any = {
@@ -233,7 +233,7 @@ export async function listPluginsInRepo(repo: string): Promise<{name: string, da
     // Fetch commit info concurrently for all plugin directories
     const plugins = await Promise.all(dirs.map(async (dir) => {
       const info = await getLatestCommitInfo(repo, dir.name);
-      return { name: dir.name, date: info ? info.date : null };
+      return { name: dir.name, date: info ? info.date : null, sha: info ? info.sha : null };
     }));
       
     // Sort by most recently updated
