@@ -38,7 +38,7 @@ body:
     id: solution
     attributes:
       label: Expected Solution / 期望的解决方案 / 期望的解決方案 / 期待する解決策 / 예상되는 해결책
-      description: What do you want to happen? (e.g., new commands) / 您希望发生什么？（例如：新命令） / 您希望發生什麼？（例如：新命令） / 何を望みますか？（例：新しいコマンド） / 무엇을 원하십니까? (예: 새로운 명령)
+      description: "What do you want to happen? (e.g., new commands) / 您希望发生什么？（例如：新命令） / 您希望發生什麼？（例如：新命令） / 何を望みますか？（例：新しいコマンド） / 무엇을 원하십니까? (예: 새로운 명령)"
     validations:
       required: true
 
