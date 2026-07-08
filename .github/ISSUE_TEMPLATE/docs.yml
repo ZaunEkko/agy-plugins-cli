@@ -1,5 +1,5 @@
 name: 📚 Documentation Update
-description: Report missing or incorrect documentation, or suggest improvements to the CLI README
+description: Report missing or incorrect documentation / 报告文档缺失或错误
 labels: ["documentation"]
 assignees: []
 
@@ -7,32 +7,47 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping improve the documentation!
-        感谢您协助改进文档！
+        Please select your preferred language below.
+        请在下方选择您的首选语言。
+        請在下方選擇您的首選語言。
+        以下から希望の言語を選択してください。
+        아래에서 선호하는 언어를 선택해 주세요.
+        
+  - type: dropdown
+    id: language
+    attributes:
+      label: Preferred Language / 首选语言 / 首選語言 / 使用言語 / 선호하는 언어
+      options:
+        - English
+        - 简体中文
+        - 繁體中文
+        - 日本語
+        - 한국어
+    validations:
+      required: true
 
   - type: dropdown
-    id: lang
+    id: target-doc
     attributes:
-      label: Which language document needs updating? (哪个语言版本的文档需要更新？)
+      label: Target Document / 目标文档 / 目標文件 / 対象ドキュメント / 대상 문서
       options:
         - English (README.md)
-        - 简体中文 (i18n/zh-CN)
-        - 繁體中文 (i18n/zh-TW)
-        - 日本語 (i18n/ja)
-        - 한국어 (i18n/ko)
+        - 简体中文 (i18n/zh-CN/README.md)
+        - 繁體中文 (i18n/zh-TW/README.md)
+        - 日本語 (i18n/ja/README.md)
+        - 한국어 (i18n/ko/README.md)
     validations:
       required: true
 
   - type: textarea
     id: description
     attributes:
-      label: Description of the issue (问题描述)
-      description: Describe what is wrong or missing in the current CLI documentation.
+      label: Description of the issue / 问题描述 / 問題描述 / 問題の説明 / 문제 설명
+      description: Describe what is wrong or missing. / 描述当前文档有什么错误或缺失。 / 描述當前文檔有什麼錯誤或缺失。 / 現在のドキュメントに何が間違っているか、または欠けているかを説明してください。 / 현재 문서에서 무엇이 잘못되었거나 누락되었는지 설명하십시오.
     validations:
       required: true
 
   - type: textarea
     id: suggestion
     attributes:
-      label: Suggested Fix (建议的修改)
-      description: If you have a specific text change in mind, please provide it here.
+      label: Suggested Fix / 建议修改 / 建議修改 / 修正の提案 / 수정 제안
