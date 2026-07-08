@@ -23,13 +23,15 @@
 - **⚡ Hot Updates with Precision**: Fetch the newest `commit` fingerprint from remote repos and perform updates instantly at global, namespace, or individual plugin levels.
 - **🖥️ Interactive TUI**: Browse, check update status, and batch-install plugins via a stunning terminal user interface built with `@clack/prompts`.
 - **🔐 Zero-Config Private Repos**: Natively detects and utilizes your local `gh auth token` to bypass GitHub API rate limits and access enterprise private plugin repositories.
-- **🛡️ Secure Hook & MCP Merging**: Safely and dynamically merges multiple `hooks.json` and `mcp.json` configurations (with automatic JSON string deduplication) to your global workspace without overwriting existing servers or triggering duplicate scripts.
+- **🛡️ Hook & MCP Merging**: Merges remote `hooks.json` and `mcp.json` into your Antigravity config. Hook arrays are deduplicated, and same-name MCP servers are replaced with a warning so updates stay explicit.
 
 <br />
 
 ## 📦 Installation
 
 To install `agy-plugins-cli` globally on your machine, simply run:
+
+Requires Node.js `^22.13.0 || >=23.5.0`.
 
 ```bash
 npm install -g agy-plugins-cli@latest
@@ -77,7 +79,7 @@ agy-plugin update commit-commands@zaunekko
 
 ## 🧠 Architecture & Security
 
-- **Fingerprint Tracking**: `agy-plugin` caches the latest Git `sha` for downloaded directories in `~/.gemini/config/state.json`, enabling intelligent delta-updates and distinct visual states (Installed vs Update Available) in the TUI.
+- **Fingerprint Tracking**: `agy-plugin` caches the latest Git `sha` for downloaded directories in `~/.agy-plugin/installed.json`, while marketplace configuration lives in `~/.agy-plugin/config.json`. This enables intelligent delta-updates and distinct visual states (Installed vs Update Available) in the TUI.
 - **Dynamic Context Injection**: Antigravity natively loads everything dropped into the `.gemini/config/` directory. Our CLI acts as the secure bridge between remote community repos and your local AI context.
 - **`gh` CLI Integration**: Under the hood, if `GITHUB_TOKEN` is missing, the tool attempts to extract tokens via `gh auth token` to ensure your local git workflow is entirely uninterrupted.
 

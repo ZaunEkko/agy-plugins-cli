@@ -23,13 +23,15 @@
 - **⚡ 極其精準的熱更新**: 即時抓取遠端儲存庫最新的 `commit` 提交指紋，支援全域、命名空間級或單一外掛級別的瞬間更新。
 - **🖥️ 互動式終端機面板 (TUI)**: 基於 `@clack/prompts` 建構了炫酷的終端機圖形介面，支援全盤瀏覽、更新狀態檢測以及一鍵批次安裝外掛。
 - **🔐 零配置接入私有儲存庫**: 原生檢測並利用您本地的 `gh auth token` 繞過 GitHub API 的速率限制，從而無縫存取企業的私有外掛庫。
-- **🛡️ 安全合併 Hooks 與 MCP**: 在向您的全域工作區自動合併多個 `hooks.json` 和 `mcp.json` 時，透過 JSON 字串深度去重技術，確保不會覆蓋現有伺服器或觸發重複的鉤子腳本。
+- **🛡️ 合併 Hooks 與 MCP**: 將遠端 `hooks.json` 和 `mcp.json` 合併到您的 Antigravity 設定中。Hook 陣列會自動去重，同名 MCP server 會在提示 warning 後被新設定取代。
 
 <br />
 
 ## 📦 安裝指南
 
 想要在您的機器上全域安裝 `agy-plugins-cli`，只需執行：
+
+需要 Node.js `^22.13.0 || >=23.5.0`。
 
 ```bash
 npm install -g agy-plugins-cli@latest
@@ -77,7 +79,7 @@ agy-plugin update commit-commands@zaunekko
 
 ## 🧠 架構與安全
 
-- **版本指紋追蹤**: `agy-plugin` 會將已下載目錄的最新 Git `sha` 快取至本地的 `~/.gemini/config/state.json` 檔案中，這使得智慧增量更新成為可能，並能在 TUI 面板中向您展示直觀的視覺反饋（已安裝 vs 有更新可用）。
+- **版本指紋追蹤**: `agy-plugin` 會將已下載目錄的最新 Git `sha` 快取至本地的 `~/.agy-plugin/installed.json`，並將 marketplace 設定保存在 `~/.agy-plugin/config.json`。這使得智慧增量更新成為可能，並能在 TUI 面板中向您展示直觀的視覺反饋（已安裝 vs 有更新可用）。
 - **動態上下文注入**: Antigravity 會原生載入被放入 `.gemini/config/` 目錄的所有內容。本 CLI 完美扮演了連接遠端社群儲存庫與您本地 AI 腦容量的安全橋樑。
 - **與 `gh` CLI 深度整合**: 在底層邏輯中，如果未發現環境變數 `GITHUB_TOKEN`，本工具將嘗試透過 `gh auth token` 指令自動提取本地授權權杖，以確保您的本地 Git 工作流程絕對不被打斷。
 

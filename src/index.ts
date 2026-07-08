@@ -9,12 +9,14 @@ import { recordPluginInstall, getInstalledPlugin, loadState } from './state';
 import { disablePlugin, enablePlugin, removePlugin } from './manager';
 import ora from 'ora';
 
+const packageJson = require('../package.json') as { version: string };
+
 const program = new Command();
 
 program
   .name('agy-plugin')
   .description('Antigravity CLI Package Manager')
-  .version('1.0.0');
+  .version(packageJson.version);
 
 const getTargetDir = (isLocal: boolean) => {
   return isLocal ? path.join(process.cwd(), '.agents') : path.join(os.homedir(), '.gemini', 'config');
