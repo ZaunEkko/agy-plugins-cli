@@ -62,7 +62,7 @@ program
     
     const spinner = ora(`Downloading ${pluginName}...`).start();
     try {
-      const targetDir = path.join(process.cwd(), '.agy');
+      const targetDir = path.join(process.cwd(), '.agents');
       await downloadPlugin(targetRepo, pluginName, targetDir);
       
       const sha = await getLatestCommitSha(targetRepo, pluginName);
@@ -111,7 +111,7 @@ program
         console.log(chalk.cyan(`Update found for ${name}. Downloading new version...`));
         const spinner = ora(`Updating ${name}...`).start();
         try {
-          const targetDir = path.join(process.cwd(), '.agy');
+          const targetDir = path.join(process.cwd(), '.agents');
           await downloadPlugin(installed.repo, name, targetDir, true); // skip security prompt on update
           recordPluginInstall(name, installed.repo, latestSha);
           spinner.succeed(chalk.green(`Successfully updated ${name}.`));

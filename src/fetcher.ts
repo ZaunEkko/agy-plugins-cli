@@ -150,7 +150,7 @@ export async function downloadPlugin(repo: string, pluginPath: string, targetDir
         const fileResponse = await axios.get(item.download_url, { responseType: 'arraybuffer' });
         
         // Handle mcp.json merge specially
-        if (item.name === 'mcp.json' && path.basename(targetDir) === '.agy') {
+        if (item.name === 'mcp.json' && path.basename(targetDir) === '.agents') {
            console.log(chalk.blue(`Found mcp.json. Merging...`));
            const remoteContent = Buffer.from(fileResponse.data).toString('utf-8');
            mergeMcpConfig(localPath, remoteContent);
