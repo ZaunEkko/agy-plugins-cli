@@ -53,9 +53,9 @@ function askQuestion(query: string): Promise<boolean> {
 }
 
 /**
- * Get the latest commit SHA for a specific path in the repository
+ * Get the latest commit info (SHA, date, message) for a specific path
  */
-export async function getLatestCommitSha(repo: string, pluginPath: string): Promise<string | null> {
+export async function getLatestCommitInfo(repo: string, pluginPath: string): Promise<{sha: string, date: string, message: string} | null> {
   const url = `${GITHUB_API_BASE}/${repo}/commits?path=${pluginPath}&per_page=1`;
   try {
     const headers: any = {
@@ -69,12 +69,24 @@ export async function getLatestCommitSha(repo: string, pluginPath: string): Prom
 
     const response = await axios.get(url, { headers });
     if (response.data && response.data.length > 0) {
-      return response.data[0].sha;
+      return {
+        sha: response.data[0].sha,
+        date: response.data[0].commit.committer.date,
+        message: response.data[0].commit.message.split('\n')[0]
+      };
     }
   } catch (e) {
     // Ignore, just return null if we can't fetch it
   }
   return null;
+}
+
+/**
+ * Get the latest commit SHA for a specific path in the repository
+ */
+export async function getLatestCommitSha(repo: string, pluginPath: string): Promise<string | null> {
+  const info = await getLatestCommitInfo(repo, pluginPath);
+  return info ? info.sha : null;
 }
 
 /**
@@ -200,9 +212,9 @@ export async function downloadPlugin(repo: string, pluginPath: string, targetDir
 }
 
 /**
- * List all available plugins (directories) in a remote repository
+ * List all available plugins (directories) in a remote repository along with update date
  */
-export async function listPluginsInRepo(repo: string): Promise<string[]> {
+export async function listPluginsInRepo(repo: string): Promise<{name: string, date: string | null}[]> {
   const url = `${GITHUB_API_BASE}/${repo}/contents/`;
   try {
     const headers: any = {
@@ -216,10 +228,20 @@ export async function listPluginsInRepo(repo: string): Promise<string[]> {
 
     const response = await axios.get<GithubContent[]>(url, { headers });
     
-    // Return all directories that aren't dotfiles
-    return response.data
-      .filter(item => item.type === 'dir' && !item.name.startsWith('.'))
-      .map(item => item.name);
+    const dirs = response.data.filter(item => item.type === 'dir' && !item.name.startsWith('.'));
+    
+    // Fetch commit info concurrently for all plugin directories
+    const plugins = await Promise.all(dirs.map(async (dir) => {
+      const info = await getLatestCommitInfo(repo, dir.name);
+      return { name: dir.name, date: info ? info.date : null };
+    }));
+      
+    // Sort by most recently updated
+    return plugins.sort((a, b) => {
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
       
   } catch (error: any) {
     if (error.response && error.response.status === 404) {
