@@ -35,17 +35,43 @@ marketplaceCmd
 marketplaceCmd
   .command('list')
   .description('List all registered marketplace namespaces')
-  .action(() => {
+  .action(async () => {
     const config = loadConfig();
     if (config.marketplaces.length === 0) {
       console.log(chalk.yellow('No marketplaces registered yet.'));
-    } else {
-      console.log(chalk.blue.bold('\n📦 Registered Namespaces:'));
-      config.marketplaces.forEach((repo, index) => {
-        const namespace = repo.split('/')[0].toLowerCase();
-        console.log(chalk.white(`  ${index + 1}. `) + chalk.green(`@${namespace}`) + chalk.gray(` -> ${repo}`));
-      });
-      console.log('');
+      return;
+    }
+    
+    console.log(chalk.white.bold('\nManage marketplaces\n'));
+    console.log(chalk.blue('> + Add Marketplace\n'));
+    
+    const state = loadState();
+
+    for (const repo of config.marketplaces) {
+      const namespace = repo.split('/')[0].toLowerCase();
+      
+      let availableCount = 0;
+      let lastUpdated = 'unknown';
+      
+      try {
+        const plugins = await listPluginsInRepo(repo);
+        availableCount = plugins.length;
+        if (plugins.length > 0) {
+          const latestDateStr = plugins.reduce((max, p) => p.date && (!max || new Date(p.date) > new Date(max)) ? p.date : max, null as string | null);
+          if (latestDateStr) {
+            const d = new Date(latestDateStr);
+            lastUpdated = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+          }
+        }
+      } catch (e) {
+        // Ignore fetch error and keep defaults
+      }
+
+      const installedCount = Object.values(state.plugins).filter(p => p.repo === repo).length;
+
+      console.log(chalk.gray(`  ● `) + chalk.white.bold(namespace));
+      console.log(chalk.gray(`    ${repo}`));
+      console.log(chalk.gray(`    ${availableCount} available • ${installedCount} installed • Updated ${lastUpdated}\n`));
     }
   });
 
