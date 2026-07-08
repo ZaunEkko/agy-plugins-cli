@@ -115,6 +115,7 @@ async function runCheckCommand(namespaceArg: string) {
       });
 
       if (isCancel(selectedPlugins)) {
+        await new Promise(resolve => setTimeout(resolve, 50));
         continue;
       }
 
@@ -138,6 +139,9 @@ async function runCheckCommand(namespaceArg: string) {
            }
         }
       }
+      
+      // Yield to event loop before recreating prompt to prevent terminal hangs
+      await new Promise(resolve => setTimeout(resolve, 50));
     } else if (action === 'update') {
       console.log(chalk.yellow('Update marketplace feature coming soon!'));
       await new Promise(r => setTimeout(r, 1000));
@@ -221,6 +225,7 @@ marketplaceCmd
           }
         });
         if (isCancel(repo)) {
+          await new Promise(resolve => setTimeout(resolve, 50));
           continue;
         }
         
@@ -230,6 +235,8 @@ marketplaceCmd
         // Note: For simplicity, new marketplaces added in the same session won't have pre-fetched stats until restart
       } else {
         await runCheckCommand(action as string);
+        // Yield to event loop when returning from inner menu to prevent terminal hangs
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
     }
   });
