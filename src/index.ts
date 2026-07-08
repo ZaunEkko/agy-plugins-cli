@@ -35,7 +35,6 @@ marketplaceCmd
 async function runCheckCommand(namespaceArg: string) {
   let namespace = namespaceArg.replace('@', '').toLowerCase();
   const config = loadConfig();
-  const state = loadState();
   
   const targetRepo = config.marketplaces.find(repo => repo.toLowerCase().includes(namespace));
   if (!targetRepo) {
@@ -53,73 +52,84 @@ async function runCheckCommand(namespaceArg: string) {
     return;
   }
 
-  // Dynamic import to support ESM-only clack/prompts
   const { select, isCancel, multiselect } = await import('@clack/prompts');
 
-  const installedPlugins = Object.entries(state.plugins).filter(([k, v]) => v.repo === targetRepo).map(([k, v]) => k);
-  
-  console.clear();
-  console.log(chalk.white.bold(namespace));
-  console.log(chalk.gray(targetRepo) + '\n');
-  console.log(chalk.white(`${plugins.length} available plugins\n`));
+  while (true) {
+    const state = loadState();
+    const installedPlugins = Object.entries(state.plugins).filter(([k, v]) => v.repo === targetRepo).map(([k, v]) => k);
+    
+    console.clear();
+    console.log(chalk.white.bold(namespace));
+    console.log(chalk.gray(targetRepo) + '\n');
+    console.log(chalk.white(`${plugins.length} available plugins\n`));
 
-  if (installedPlugins.length > 0) {
-    console.log(chalk.white.bold(`Installed plugins (${installedPlugins.length}):`));
-    installedPlugins.forEach(p => {
-      console.log(chalk.gray(`● `) + chalk.white(p.split('@')[0]));
-    });
-    console.log('');
-  }
-
-  const action = await select({
-    message: 'Select an action (Enter to select • Esc to go back)',
-    options: [
-      { value: 'browse', label: `> Browse plugins (${plugins.length})` },
-      { value: 'update', label: `  Update marketplace` },
-      { value: 'remove', label: `  Remove marketplace` }
-    ],
-  });
-
-  if (isCancel(action)) {
-    process.exit(0);
-  }
-
-  if (action === 'browse') {
-    const selectedPlugins = await multiselect({
-      message: 'Select plugins to install (Space to select, Enter to confirm)',
-      options: plugins.map(p => ({
-        value: p.name,
-        label: p.name,
-        hint: p.date ? `updated ${new Date(p.date).toISOString().split('T')[0]}` : ''
-      })),
-      required: false,
-    });
-
-    if (isCancel(selectedPlugins)) {
-      process.exit(0);
+    if (installedPlugins.length > 0) {
+      console.log(chalk.white.bold(`Installed plugins (${installedPlugins.length}):`));
+      installedPlugins.forEach(p => {
+        console.log(chalk.gray(`● `) + chalk.white(p.split('@')[0]));
+      });
+      console.log('');
     }
 
-    const toInstall = selectedPlugins as string[];
-    if (toInstall.length > 0) {
-      for (const p of toInstall) {
-         console.log(chalk.blue(`\nInstalling ${p}...`));
-         const targetDir = getTargetDir(false);
-         try {
-           const result = await downloadPlugin(targetRepo, p, targetDir);
-           const sha = await getLatestCommitSha(targetRepo, p);
-           if (sha) {
-             recordPluginInstall(`${p}@${namespace}`, targetRepo, sha, result.files, result.hooks);
-           }
-           console.log(chalk.green(`✓ Successfully installed ${p}`));
-         } catch (e) {
-           console.log(chalk.red(`Failed to install ${p}`));
-         }
+    const action = await select({
+      message: 'Select an action (Enter to select • Esc to go back)',
+      options: [
+        { value: 'browse', label: `> Browse plugins (${plugins.length})` },
+        { value: 'update', label: `  Update marketplace` },
+        { value: 'remove', label: `  Remove marketplace` },
+        { value: 'back', label: `  < Go back` }
+      ],
+    });
+
+    if (isCancel(action) || action === 'back') {
+      return;
+    }
+
+    if (action === 'browse') {
+      const selectedPlugins = await multiselect({
+        message: 'Select plugins to install (Space to select, Enter to confirm, Esc to go back)',
+        options: plugins.map(p => {
+          const dateStr = p.date ? chalk.gray(` (updated ${new Date(p.date).toISOString().split('T')[0]})`) : '';
+          return {
+            value: p.name,
+            label: `${p.name}${dateStr}`
+          };
+        }),
+        initialValues: plugins.filter(p => installedPlugins.includes(`${p.name}@${namespace}`)).map(p => p.name),
+        required: false,
+      });
+
+      if (isCancel(selectedPlugins)) {
+        continue;
       }
+
+      const toInstall = selectedPlugins as string[];
+      if (toInstall.length > 0) {
+        for (const p of toInstall) {
+           // Skip if already installed
+           if (!installedPlugins.includes(`${p}@${namespace}`)) {
+             console.log(chalk.blue(`\nInstalling ${p}...`));
+             const targetDir = getTargetDir(false);
+             try {
+               const result = await downloadPlugin(targetRepo, p, targetDir);
+               const sha = await getLatestCommitSha(targetRepo, p);
+               if (sha) {
+                 recordPluginInstall(`${p}@${namespace}`, targetRepo, sha, result.files, result.hooks);
+               }
+               console.log(chalk.green(`✓ Successfully installed ${p}`));
+             } catch (e) {
+               console.log(chalk.red(`Failed to install ${p}`));
+             }
+           }
+        }
+      }
+    } else if (action === 'update') {
+      console.log(chalk.yellow('Update marketplace feature coming soon!'));
+      await new Promise(r => setTimeout(r, 1000));
+    } else if (action === 'remove') {
+      console.log(chalk.yellow('Remove marketplace feature coming soon!'));
+      await new Promise(r => setTimeout(r, 1000));
     }
-  } else if (action === 'update') {
-    console.log(chalk.yellow('Update marketplace feature coming soon!'));
-  } else if (action === 'remove') {
-    console.log(chalk.yellow('Remove marketplace feature coming soon!'));
   }
 }
 
@@ -127,23 +137,17 @@ marketplaceCmd
   .command('list')
   .description('List all registered marketplace namespaces')
   .action(async () => {
-    const config = loadConfig();
-    const state = loadState();
-    
-    // Dynamic import to support ESM-only clack/prompts
     const { select, isCancel, text } = await import('@clack/prompts');
+    
+    // Fetch GitHub stats ONCE to avoid rate limits when looping back
+    const initialConfig = loadConfig();
+    let stats: Record<string, {availableCount: number, lastUpdated: string}> = {};
 
-    let options: { value: string, label: string, hint?: string }[] = [];
-    options.push({ value: 'add', label: chalk.blue('> + Add Marketplace') });
-
-    if (config.marketplaces.length > 0) {
+    if (initialConfig.marketplaces.length > 0) {
       const s = ora('Loading marketplaces...').start();
-      for (const repo of config.marketplaces) {
-        const namespace = repo.split('/')[0].toLowerCase();
-        
+      for (const repo of initialConfig.marketplaces) {
         let availableCount = 0;
         let lastUpdated = 'unknown';
-        
         try {
           const plugins = await listPluginsInRepo(repo);
           availableCount = plugins.length;
@@ -155,47 +159,63 @@ marketplaceCmd
             }
           }
         } catch (e) {
-          // Ignore fetch error and keep defaults
+          // Ignore
         }
+        stats[repo] = { availableCount, lastUpdated };
+      }
+      s.stop();
+    }
 
+    while (true) {
+      // Reload config/state dynamically to reflect any new additions or installs
+      const config = loadConfig();
+      const state = loadState();
+
+      let options: { value: string, label: string, hint?: string }[] = [];
+      options.push({ value: 'add', label: chalk.blue('> + Add Marketplace') });
+
+      for (const repo of config.marketplaces) {
+        const namespace = repo.split('/')[0].toLowerCase();
+        const stat = stats[repo] || { availableCount: 0, lastUpdated: 'unknown' };
         const installedCount = Object.values(state.plugins).filter(p => p.repo === repo).length;
 
         options.push({
           value: namespace,
           label: chalk.white(`● `) + chalk.white.bold(namespace) + chalk.gray(`  (${repo})`),
-          hint: `${availableCount} available • ${installedCount} installed • Updated ${lastUpdated}`
+          hint: `${stat.availableCount} available • ${installedCount} installed • Updated ${stat.lastUpdated}`
         });
       }
-      s.stop();
-    }
 
-    console.clear();
-    const action = await select({
-      message: 'Manage marketplaces',
-      options,
-    });
-
-    if (isCancel(action)) {
-      process.exit(0);
-    }
-
-    if (action === 'add') {
-      const repo = await text({
-        message: 'Enter the GitHub repository path (e.g., ZaunEkko/agy-plugins):',
-        placeholder: 'username/repo',
-        validate(value) {
-          if (!value) return 'Repository path is required!';
-          if (!value.includes('/')) return 'Must be in username/repo format!';
-        }
+      console.clear();
+      const action = await select({
+        message: 'Manage marketplaces',
+        options,
       });
-      if (isCancel(repo)) {
+
+      if (isCancel(action)) {
         process.exit(0);
       }
-      addMarketplace(repo as string);
-      console.log(chalk.green(`\n✓ Successfully added marketplace: ${repo}`));
-      console.log(chalk.gray(`Tip: Run 'agy-plugin marketplace list' again to explore it.`));
-    } else {
-      await runCheckCommand(action as string);
+
+      if (action === 'add') {
+        const repo = await text({
+          message: 'Enter the GitHub repository path (e.g., ZaunEkko/agy-plugins):',
+          placeholder: 'username/repo',
+          validate(value) {
+            if (!value) return 'Repository path is required!';
+            if (!value.includes('/')) return 'Must be in username/repo format!';
+          }
+        });
+        if (isCancel(repo)) {
+          continue;
+        }
+        
+        addMarketplace(repo as string);
+        console.log(chalk.green(`\n✓ Successfully added marketplace: ${repo}`));
+        await new Promise(r => setTimeout(r, 1000));
+        // Note: For simplicity, new marketplaces added in the same session won't have pre-fetched stats until restart
+      } else {
+        await runCheckCommand(action as string);
+      }
     }
   });
 
