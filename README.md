@@ -43,7 +43,20 @@ npm install -g agy-plugins-cli@latest
 
 ## 🚀 Quick Start
 
-### 1. Add and Explore Marketplaces
+### ⚖️ Choose Your Installation Method
+
+Both methods are 100% compatible and will deduplicate hooks/skills if used simultaneously!
+
+| Feature | Official CLI (`agy plugin install`) | Custom CLI (`agy-plugin add`) |
+|---------|-------------------------------------|-------------------------------|
+| **Style** | Native, command-line only | Interactive TUI, dashboard style |
+| **Source** | Git URL (`https://...git`) | Namespace (`plugin@namespace`) |
+| **Hooks** | Background dynamic mount (hidden from `/hooks`) | Force-merged (visible in `/hooks` TUI) |
+| **Updates** | Manual re-clone | One-click batch updates (`agy-plugin update`) |
+
+---
+
+### 1. Add and Explore Marketplaces (Custom CLI Method)
 Link a GitHub repository to your local registry and explore its plugins interactively.
 ```bash
 # Add a repository as a marketplace
@@ -79,6 +92,7 @@ agy-plugin update commit-commands@zaunekko
 
 ## 🧠 Architecture & Security
 
+- **Official CLI Compatibility & Deduplication**: Fully compatible with the native `agy plugin install <git-url>` mechanism. Whether you install a plugin via our TUI, the native CLI, or both simultaneously, Antigravity gracefully deduplicates hooks and skills by ID/name, ensuring a robust, conflict-free ecosystem.
 - **Fingerprint Tracking**: `agy-plugin` caches the latest Git `sha` for downloaded directories in `~/.agy-plugin/installed.json`, while marketplace configuration lives in `~/.agy-plugin/config.json`. This enables intelligent delta-updates and distinct visual states (Installed vs Update Available) in the TUI.
 - **Dynamic Context Injection**: Antigravity natively loads everything dropped into the `.gemini/config/` directory. Our CLI acts as the secure bridge between remote community repos and your local AI context.
 - **`gh` CLI Integration**: Under the hood, if `GITHUB_TOKEN` is missing, the tool attempts to extract tokens via `gh auth token` to ensure your local git workflow is entirely uninterrupted.
